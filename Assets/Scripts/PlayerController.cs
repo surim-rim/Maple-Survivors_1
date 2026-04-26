@@ -16,6 +16,9 @@ public class PlayerController : MonoBehaviour
 
     public int CurrentHP { get; private set; }
 
+    private Vector2 lastFacingDir = Vector2.right;
+    public Vector2 FacingDir => lastFacingDir;
+
     private Rigidbody2D rb;
     private SpriteRenderer sr;
     private Vector2 movement;
@@ -41,6 +44,8 @@ public class PlayerController : MonoBehaviour
 
         if (movement.x > 0) facingRight = true;
         else if (movement.x < 0) facingRight = false;
+
+        if (movement != Vector2.zero) lastFacingDir = movement;
 
         AnimateSprite();
     }

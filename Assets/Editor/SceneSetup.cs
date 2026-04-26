@@ -269,6 +269,16 @@ public class SceneSetup
         var gm = new GameObject("GameManager").AddComponent<GameManager>();
         var bossPrefab = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Prefabs/Boss.prefab");
         if (bossPrefab != null) gm.bossPrefab = bossPrefab;
+
+        // CharacterSelectUI
+        var existingCS = GameObject.Find("CharacterSelectUI");
+        if (existingCS != null) Object.DestroyImmediate(existingCS);
+        var csObj = new GameObject("CharacterSelectUI");
+        var csUI  = csObj.AddComponent<CharacterSelectUI>();
+        csUI.autoAttack  = player.GetComponent<AutoAttack>();
+        csUI.swordAttack = player.GetComponent<SwordAttack>();
+        var previewSprites = LoadPlayerSprites("right1");
+        if (previewSprites.Length > 0) csUI.characterSprite = previewSprites[0];
     }
 
     // ── Player ────────────────────────────────────────────
@@ -302,6 +312,12 @@ public class SceneSetup
 
         var autoAttack = obj.AddComponent<AutoAttack>();
         autoAttack.projectilePrefab = projectilePrefab;
+        autoAttack.enabled = false;
+
+        var swordAttack = obj.AddComponent<SwordAttack>();
+        swordAttack.enabled = false;
+        var attackSprites = LoadPlayerSprites("attack");
+        if (attackSprites.Length > 0) swordAttack.slashSprite = attackSprites[0];
 
         return obj;
     }

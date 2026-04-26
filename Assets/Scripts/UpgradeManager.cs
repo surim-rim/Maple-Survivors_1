@@ -60,11 +60,14 @@ public class UpgradeManager : MonoBehaviour
         var pc = FindObjectOfType<PlayerController>();
         var aa = FindObjectOfType<AutoAttack>();
 
+        var sa = FindObjectOfType<SwordAttack>();
+
         switch (id)
         {
             case 0: // 공격속도
                 if (ps != null) ps.attackInterval = Mathf.Max(0.15f, ps.attackInterval * 0.8f);
                 if (aa != null && ps != null) aa.attackInterval = ps.attackInterval;
+                if (sa != null && ps != null) sa.attackInterval = ps.attackInterval;
                 break;
             case 1: // 공격력
                 if (ps != null) ps.damage += 10;
