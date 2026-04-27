@@ -24,8 +24,11 @@ public class DamageTextManager : MonoBehaviour
         cam = Camera.main;
     }
 
+    public static bool ShowDamage = true;
+
     public void Show(Vector3 worldPos, int damage, Color color)
     {
+        if (!ShowDamage) return;
         texts.Add(new FloatingText { worldPos = worldPos, text = damage.ToString(), color = color, age = 0f });
     }
 

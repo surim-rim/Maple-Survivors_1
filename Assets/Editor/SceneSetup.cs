@@ -270,6 +270,11 @@ public class SceneSetup
         var bossPrefab = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Prefabs/Boss.prefab");
         if (bossPrefab != null) gm.bossPrefab = bossPrefab;
 
+        // PauseMenu
+        var existingPM = GameObject.Find("PauseMenu");
+        if (existingPM != null) Object.DestroyImmediate(existingPM);
+        new GameObject("PauseMenu").AddComponent<PauseMenu>();
+
         // CharacterSelectUI
         var existingCS = GameObject.Find("CharacterSelectUI");
         if (existingCS != null) Object.DestroyImmediate(existingCS);

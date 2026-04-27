@@ -7,6 +7,7 @@ public class CharacterSelectUI : MonoBehaviour
     public Sprite      characterSprite;
 
     private bool selected;
+    private bool showingTitle = true;
 
     void Awake()
     {
@@ -20,6 +21,8 @@ public class CharacterSelectUI : MonoBehaviour
         // 어두운 전체 배경
         GUI.color = new Color(0f, 0f, 0f, 0.85f);
         GUI.DrawTexture(new Rect(0, 0, Screen.width, Screen.height), Texture2D.whiteTexture);
+
+        if (showingTitle) { DrawTitleScreen(); return; }
 
         // 타이틀
         GUI.color = new Color(1f, 0.9f, 0.2f, 1f);
@@ -119,6 +122,47 @@ public class CharacterSelectUI : MonoBehaviour
         // 설명
         GUI.color = new Color(0.9f, 0.9f, 0.9f, 1f);
         GUI.Label(new Rect(x + 16f, y + 198f, w - 32f, 100f), desc, descStyle);
+    }
+
+    void DrawTitleScreen()
+    {
+        var titleStyle = new GUIStyle(GUI.skin.label)
+        {
+            fontSize  = 52,
+            fontStyle = FontStyle.Bold,
+            alignment = TextAnchor.MiddleCenter
+        };
+        var subStyle = new GUIStyle(GUI.skin.label)
+        {
+            fontSize  = 20,
+            alignment = TextAnchor.MiddleCenter
+        };
+
+        // 게임 타이틀
+        GUI.color = new Color(1f, 0.9f, 0.2f, 1f);
+        GUI.Label(new Rect(0, Screen.height * 0.3f, Screen.width, 70f),
+            "Maple Survivor", titleStyle);
+
+        // 부제
+        GUI.color = new Color(0.85f, 0.85f, 0.85f, 1f);
+        GUI.Label(new Rect(0, Screen.height * 0.3f + 72f, Screen.width, 30f),
+            "메이플스토리 세계에서 살아남아라!", subStyle);
+
+        // 시작 버튼
+        var btnStyle = new GUIStyle(GUI.skin.button)
+        {
+            fontSize  = 22,
+            fontStyle = FontStyle.Bold
+        };
+        float btnW = 200f, btnH = 54f;
+        float btnX = (Screen.width  - btnW) / 2f;
+        float btnY = Screen.height * 0.72f;
+
+        GUI.color = new Color(0.25f, 0.7f, 0.3f, 1f);
+        if (GUI.Button(new Rect(btnX, btnY, btnW, btnH), "시작", btnStyle))
+            showingTitle = false;
+
+        GUI.color = Color.white;
     }
 
     void SelectCharacter(int id)
