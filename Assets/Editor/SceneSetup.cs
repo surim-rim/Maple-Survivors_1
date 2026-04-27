@@ -40,12 +40,21 @@ public class SceneSetup
 
         // 프리팹 생성
         GameObject projectilePrefab = CreateProjectilePrefab(snailFirst, snailSprites);
-        GameObject enemyPrefab      = CreateEnemyPrefab(enemySprite, gemPrefab);
+
+        // 5종 몹 프리팹
+        GameObject[] enemyPrefabs = new GameObject[]
+        {
+            CreateEnemyPrefabWithSprites("Red", LoadPlayerSprites("red1","red2"), gemPrefab, 0.15f),
+            CreateEnemyPrefabWithSprites("Pig", LoadPlayerSprites("pig1","pig2"), gemPrefab, 0.25f),
+            CreateEnemyPrefabWithSprites("Eye", LoadPlayerSprites("eye1","eye2"), gemPrefab, 0.3f),
+            CreateEnemyPrefabWithSprites("Sl",  LoadPlayerSprites("sl1", "sl2"),  gemPrefab, 0.3f),
+            CreateEnemyPrefabWithSprites("Mu",  LoadPlayerSprites("mu1", "mu2"),  gemPrefab, 0.2f),
+        };
 
         // 씬 오브젝트 배치
         CreateBackground();
         GameObject player = CreatePlayer(firstSprite, rightSprites, leftSprites, projectilePrefab);
-        CreateEnemySpawner(enemyPrefab);
+        CreateEnemySpawner(enemyPrefabs);
         SetupCamera(player.transform);
         CreateManagers(player);
 
@@ -328,14 +337,49 @@ public class SceneSetup
     }
 
     // ── EnemySpawner ──────────────────────────────────────
-    static void CreateEnemySpawner(GameObject enemyPrefab)
+    static void CreateEnemySpawner(GameObject[] enemyPrefabs)
     {
         var existing = GameObject.Find("EnemySpawner");
         if (existing != null) Object.DestroyImmediate(existing);
 
         var obj = new GameObject("EnemySpawner");
         var spawner = obj.AddComponent<EnemySpawner>();
-        spawner.enemyPrefab = enemyPrefab;
+        spawner.enemyPrefabs = enemyPrefabs;
+    }
+
+    // ── 스프라이트 기반 Enemy 프리팹 ─────────────────────────
+    static GameObject CreateEnemyPrefabWithSprites(string name, Sprite[] sprites, GameObject gemPrefab,
+                                                    float visualScale = 0.2f)
+    {
+        var obj = new GameObject(name);
+        obj.tag = "Enemy";
+
+        var rb = obj.AddComponent<Rigidbody2D>();
+        rb.gravityScale = 0f;
+        rb.drag         = 2f;
+        rb.constraints  = RigidbodyConstraints2D.FreezeRotation;
+        rb.bodyType     = RigidbodyType2D.Dynamic;
+
+        var col = obj.AddComponent<CircleCollider2D>();
+        col.isTrigger = false;
+        col.radius    = 0.8f;
+
+        var enemy = obj.AddComponent<Enemy>();
+        enemy.xpGemPrefab = gemPrefab;
+        enemy.sprites     = sprites;
+
+        // 비주얼 자식 오브젝트 (히트박스와 독립적으로 크기 조절)
+        var visual = new GameObject("Visual");
+        visual.transform.SetParent(obj.transform);
+        visual.transform.localPosition = Vector3.zero;
+        visual.transform.localScale    = new Vector3(visualScale, visualScale, 1f);
+
+        var sr = visual.AddComponent<SpriteRenderer>();
+        if (sprites != null && sprites.Length > 0) sr.sprite = sprites[0];
+
+        var prefab = PrefabUtility.SaveAsPrefabAsset(obj, $"Assets/Prefabs/{name}Enemy.prefab");
+        Object.DestroyImmediate(obj);
+        return prefab;
     }
 
     // ── Background ────────────────────────────────────────

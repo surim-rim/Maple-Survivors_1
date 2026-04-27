@@ -2,7 +2,7 @@ using UnityEngine;
 
 public class EnemySpawner : MonoBehaviour
 {
-    public GameObject enemyPrefab;
+    public GameObject[] enemyPrefabs;
     public float spawnRadius = 13f;
     public float initialInterval = 1.5f;
     public float minInterval = 0.3f;
@@ -21,7 +21,7 @@ public class EnemySpawner : MonoBehaviour
 
     void Update()
     {
-        if (player == null || enemyPrefab == null) return;
+        if (player == null || enemyPrefabs == null || enemyPrefabs.Length == 0) return;
 
         // 시간이 지날수록 스폰 간격 감소 (난이도 상승)
         currentInterval = Mathf.Max(minInterval, initialInterval - Time.time * 0.02f);
@@ -39,6 +39,7 @@ public class EnemySpawner : MonoBehaviour
     {
         float angle = Random.Range(0f, 360f) * Mathf.Deg2Rad;
         Vector2 offset = new Vector2(Mathf.Cos(angle), Mathf.Sin(angle)) * spawnRadius;
-        Instantiate(enemyPrefab, player.position + (Vector3)offset, Quaternion.identity);
+        var prefab = enemyPrefabs[Random.Range(0, enemyPrefabs.Length)];
+        Instantiate(prefab, player.position + (Vector3)offset, Quaternion.identity);
     }
 }
