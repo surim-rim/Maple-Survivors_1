@@ -5,6 +5,8 @@ public class GameUI : MonoBehaviour
 {
     public static GameUI Instance { get; private set; }
 
+    public Sprite[] upgradeIcons = new Sprite[5]; // id 순서대로 (0~4)
+
     private List<UpgradeManager.UpgradeOption> upgradeChoices;
     private bool showingUpgrades;
     private bool gameOver;
@@ -121,7 +123,7 @@ public class GameUI : MonoBehaviour
         if (upgradeChoices == null) return;
 
         float panelW = 620f;
-        float panelH = 290f;
+        float panelH = 340f;
         float panelX = (Screen.width  - panelW) / 2f;
         float panelY = (Screen.height - panelH) / 2f;
 
@@ -134,7 +136,7 @@ public class GameUI : MonoBehaviour
             "<b><size=17>   레벨 업! 업그레이드를 선택하세요</size></b>");
 
         float cardW  = 165f;
-        float cardH  = 185f;
+        float cardH  = 230f;
         float gap    = 18f;
         float totalW = upgradeChoices.Count * cardW + (upgradeChoices.Count - 1) * gap;
         float startX = panelX + (panelW - totalW) / 2f;
@@ -149,10 +151,25 @@ public class GameUI : MonoBehaviour
             GUI.color = new Color(0.18f, 0.28f, 0.48f, 1f);
             GUI.DrawTexture(new Rect(cx, cardY, cardW, cardH), Texture2D.whiteTexture);
 
-            // 카드 텍스트
+            // 이름
             GUI.color = Color.white;
-            GUI.Label(new Rect(cx + 10f, cardY + 12f, cardW - 20f, 36f), $"<b><size=14>{opt.name}</size></b>");
-            GUI.Label(new Rect(cx + 10f, cardY + 52f, cardW - 20f, 80f), opt.description);
+            GUI.Label(new Rect(cx + 10f, cardY + 10f, cardW - 20f, 26f), $"<b><size=14>{opt.name}</size></b>");
+
+            // 아이콘 이미지
+            Sprite icon = (upgradeIcons != null && opt.id < upgradeIcons.Length) ? upgradeIcons[opt.id] : null;
+            if (icon != null)
+            {
+                float imgSize = 64f;
+                float imgX    = cx + (cardW - imgSize) / 2f;
+                GUI.color = Color.white;
+                GUI.DrawTexture(new Rect(imgX, cardY + 40f, imgSize, imgSize),
+                    icon.texture, ScaleMode.ScaleToFit, true);
+            }
+
+            // 설명
+            var descStyle = new GUIStyle(GUI.skin.label) { wordWrap = true, fontSize = 11 };
+            GUI.color = new Color(0.9f, 0.9f, 0.9f, 1f);
+            GUI.Label(new Rect(cx + 10f, cardY + 112f, cardW - 20f, 72f), opt.description, descStyle);
 
             // 선택 버튼
             GUI.color = new Color(0.25f, 0.6f, 0.25f, 1f);
