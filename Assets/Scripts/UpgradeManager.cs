@@ -61,6 +61,9 @@ public class UpgradeManager : MonoBehaviour
         var aa = FindObjectOfType<AutoAttack>();
 
         var sa = FindObjectOfType<SwordAttack>();
+        var ba = FindObjectOfType<BowAttack>();
+        var ta = FindObjectOfType<ThrowingStarAttack>();
+        var ca = FindObjectOfType<CannonAttack>();
 
         switch (id)
         {
@@ -68,6 +71,9 @@ public class UpgradeManager : MonoBehaviour
                 if (ps != null) ps.attackInterval = Mathf.Max(0.15f, ps.attackInterval * 0.8f);
                 if (aa != null && ps != null) aa.attackInterval = ps.attackInterval;
                 if (sa != null && ps != null) sa.attackInterval = ps.attackInterval;
+                if (ba != null && ps != null) ba.attackInterval = ps.attackInterval;
+                if (ta != null && ps != null) ta.attackInterval = ps.attackInterval;
+                if (ca != null && ps != null) ca.attackInterval = Mathf.Max(0.5f, ps.attackInterval * 2f);
                 break;
             case 1: // 공격력
                 if (ps != null) ps.damage += 10;

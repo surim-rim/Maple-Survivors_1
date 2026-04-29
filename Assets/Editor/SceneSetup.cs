@@ -22,9 +22,6 @@ public class SceneSetup
         Sprite   firstSprite  = rightSprites.Length > 0 ? rightSprites[0]
                                 : CreateCircleSprite("Player", new Color(0.3f, 0.8f, 1f));
 
-        // 임시 스프라이트 생성
-        Sprite enemySprite = CreateCircleSprite("Enemy", new Color(1f, 0.3f, 0.3f));
-
         // 달팽이 투사체 스프라이트 로드
         Sprite[] snailSprites = LoadPlayerSprites("snail1", "snail2");
         Sprite   snailFirst   = snailSprites.Length > 0 ? snailSprites[0]
@@ -41,7 +38,7 @@ public class SceneSetup
         // 프리팹 생성
         GameObject projectilePrefab = CreateProjectilePrefab(snailFirst, snailSprites);
 
-        // 5종 몹 프리팹
+        // 9종 몹 프리팹
         GameObject[] enemyPrefabs = new GameObject[]
         {
             CreateEnemyPrefabWithSprites("Red", LoadPlayerSprites("red1","red2"), gemPrefab, 0.15f),
@@ -49,6 +46,10 @@ public class SceneSetup
             CreateEnemyPrefabWithSprites("Eye", LoadPlayerSprites("eye1","eye2"), gemPrefab, 0.3f),
             CreateEnemyPrefabWithSprites("Sl",  LoadPlayerSprites("sl1", "sl2"),  gemPrefab, 0.3f),
             CreateEnemyPrefabWithSprites("Mu",  LoadPlayerSprites("mu1", "mu2"),  gemPrefab, 0.2f),
+            CreateEnemyPrefabWithSprites("G",   LoadPlayerSprites("g1",  "g2"),   gemPrefab, 0.15f),
+            CreateEnemyPrefabWithSprites("Ss",  LoadPlayerSprites("ss1", "ss2"),  gemPrefab, 0.15f),
+            CreateEnemyPrefabWithSprites("B",   LoadPlayerSprites("b1",  "b2"),   gemPrefab, 0.25f),
+            CreateEnemyPrefabWithSprites("D",   LoadPlayerSprites("d1",  "d2"),   gemPrefab, 0.25f),
         };
 
         // 씬 오브젝트 배치
@@ -289,10 +290,54 @@ public class SceneSetup
         if (existingCS != null) Object.DestroyImmediate(existingCS);
         var csObj = new GameObject("CharacterSelectUI");
         var csUI  = csObj.AddComponent<CharacterSelectUI>();
-        csUI.autoAttack  = player.GetComponent<AutoAttack>();
-        csUI.swordAttack = player.GetComponent<SwordAttack>();
-        var previewSprites = LoadPlayerSprites("right1");
-        if (previewSprites.Length > 0) csUI.characterSprite = previewSprites[0];
+        csUI.autoAttack         = player.GetComponent<AutoAttack>();
+        csUI.swordAttack        = player.GetComponent<SwordAttack>();
+        csUI.iceOrbAttack       = player.GetComponent<IceOrbAttack>();
+        csUI.throwingStarAttack = player.GetComponent<ThrowingStarAttack>();
+        csUI.cannonAttack       = player.GetComponent<CannonAttack>();
+        csUI.bowAttack          = player.GetComponent<BowAttack>();
+
+        // 캐릭터별 대표 이미지 (인덱스 0~5 = 캐릭터 1~6)
+        csUI.characterSprites = new Sprite[6];
+        Sprite[] ch1sp = LoadPlayerSprites("right1"); if (ch1sp.Length > 0) csUI.characterSprites[0] = ch1sp[0];
+        Sprite[] ch2sp = LoadPlayerSprites("hh2");    if (ch2sp.Length > 0) csUI.characterSprites[1] = ch2sp[0];
+        Sprite[] ch3sp = LoadPlayerSprites("ice2");   if (ch3sp.Length > 0) csUI.characterSprites[2] = ch3sp[0];
+        Sprite[] ch4sp = LoadPlayerSprites("ni2");    if (ch4sp.Length > 0) csUI.characterSprites[3] = ch4sp[0];
+        Sprite[] ch5sp = LoadPlayerSprites("ca2");    if (ch5sp.Length > 0) csUI.characterSprites[4] = ch5sp[0];
+        Sprite[] ch6sp = LoadPlayerSprites("boma2");  if (ch6sp.Length > 0) csUI.characterSprites[5] = ch6sp[0];
+
+        // 캐릭터별 인게임 스프라이트 세트
+        csUI.charSpriteSets = new CharacterSelectUI.CharSpriteSet[6];
+        csUI.charSpriteSets[0] = new CharacterSelectUI.CharSpriteSet // 초보자
+        {
+            rightSprites = LoadPlayerSprites("right1", "right2"),
+            leftSprites  = LoadPlayerSprites("left2",  "left1")
+        };
+        csUI.charSpriteSets[1] = new CharacterSelectUI.CharSpriteSet // 히어로
+        {
+            rightSprites = LoadPlayerSprites("hh2", "hh1"),
+            leftSprites  = new Sprite[0]
+        };
+        csUI.charSpriteSets[2] = new CharacterSelectUI.CharSpriteSet // 썬콜
+        {
+            rightSprites = LoadPlayerSprites("ice2", "ice1"),
+            leftSprites  = new Sprite[0]
+        };
+        csUI.charSpriteSets[3] = new CharacterSelectUI.CharSpriteSet // 나이트로드
+        {
+            rightSprites = LoadPlayerSprites("ni2", "ni1"),
+            leftSprites  = new Sprite[0]
+        };
+        csUI.charSpriteSets[4] = new CharacterSelectUI.CharSpriteSet // 캐논슈터
+        {
+            rightSprites = LoadPlayerSprites("ca2", "ca1"),
+            leftSprites  = new Sprite[0]
+        };
+        csUI.charSpriteSets[5] = new CharacterSelectUI.CharSpriteSet // 보우마스터
+        {
+            rightSprites = LoadPlayerSprites("boma2", "boma1"),
+            leftSprites  = new Sprite[0]
+        };
     }
 
     // ── Player ────────────────────────────────────────────
@@ -332,6 +377,26 @@ public class SceneSetup
         swordAttack.enabled = false;
         var attackSprites = LoadPlayerSprites("attack");
         if (attackSprites.Length > 0) swordAttack.slashSprite = attackSprites[0];
+
+        var iceOrb = obj.AddComponent<IceOrbAttack>();
+        iceOrb.enabled = false;
+        var iceWSprites = LoadPlayerSprites("ice_w");
+        if (iceWSprites.Length > 0) iceOrb.orbSprite = iceWSprites[0];
+
+        var throwingStar = obj.AddComponent<ThrowingStarAttack>();
+        throwingStar.enabled = false;
+        var niWSprites = LoadPlayerSprites("ni_w");
+        if (niWSprites.Length > 0) throwingStar.starSprite = niWSprites[0];
+
+        var cannon = obj.AddComponent<CannonAttack>();
+        cannon.enabled = false;
+        var caWSprites = LoadPlayerSprites("ca_w");
+        if (caWSprites.Length > 0) cannon.cannonballSprite = caWSprites[0];
+
+        var bow = obj.AddComponent<BowAttack>();
+        bow.enabled = false;
+        var bomaWSprites = LoadPlayerSprites("boma_w");
+        if (bomaWSprites.Length > 0) bow.arrowSprite = bomaWSprites[0];
 
         return obj;
     }

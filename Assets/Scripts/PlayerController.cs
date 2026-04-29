@@ -13,6 +13,7 @@ public class PlayerController : MonoBehaviour
     public Sprite[] rightSprites;
     public Sprite[] leftSprites;
     public float animFrameRate = 6f;
+    [HideInInspector] public bool useFlipX = false; // 별도 left 스프라이트 없을 때 flipX로 방향 표현
 
     public int CurrentHP { get; private set; }
 
@@ -60,7 +61,16 @@ public class PlayerController : MonoBehaviour
 
     void AnimateSprite()
     {
-        Sprite[] frames = facingRight ? rightSprites : leftSprites;
+        Sprite[] frames;
+        if (useFlipX)
+        {
+            frames = rightSprites;
+            if (sr != null) sr.flipX = !facingRight;
+        }
+        else
+        {
+            frames = facingRight ? rightSprites : leftSprites;
+        }
         if (frames == null || frames.Length == 0) return;
 
         if (movement != Vector2.zero)
