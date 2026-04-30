@@ -9,6 +9,7 @@ public class ThrowingStarAttack : MonoBehaviour
     public float  projectileSpeed = 16f;
     public Sprite starSprite;
     public int    weaponLevel     = 1;
+    public float  starScale       = 0.2f;
 
     private float timer;
 
@@ -53,7 +54,7 @@ public class ThrowingStarAttack : MonoBehaviour
     {
         var go = new GameObject("ThrowingStar");
         go.transform.position   = transform.position;
-        go.transform.localScale = new Vector3(0.2f, 0.2f, 1f);
+        go.transform.localScale = new Vector3(starScale, starScale, 1f);
 
         var sr = go.AddComponent<SpriteRenderer>();
         sr.sprite       = starSprite;

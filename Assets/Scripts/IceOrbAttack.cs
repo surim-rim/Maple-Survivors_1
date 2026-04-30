@@ -11,6 +11,7 @@ public class IceOrbAttack : MonoBehaviour
     public int    weaponLevel      = 1;
     public int    orbCount         = 1;
     public float  damageMultiplier = 1f;
+    public float  orbScale         = 0.35f;
 
     private float timer;
 
@@ -50,7 +51,7 @@ public class IceOrbAttack : MonoBehaviour
     {
         var go = new GameObject("IceOrb");
         go.transform.position   = transform.position;
-        go.transform.localScale = new Vector3(0.35f, 0.35f, 1f);
+        go.transform.localScale = new Vector3(orbScale, orbScale, 1f);
 
         var sr = go.AddComponent<SpriteRenderer>();
         sr.sprite       = orbSprite;

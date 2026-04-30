@@ -21,6 +21,7 @@ public class UpgradeManager : MonoBehaviour
         new UpgradeOption { id = 4, name = "흡수 범위 UP",   description = "젬 흡수 범위 +2" },
         new UpgradeOption { id = 10, name = "투사체 속도 UP", description = "투사체 속도 +2" },
         new UpgradeOption { id = 11, name = "방어력 UP",      description = "방어력 +5, 피해 감소" },
+        new UpgradeOption { id = 12, name = "공격 범위 UP",   description = "모든 공격 범위 및 이펙트 증가" },
     };
 
     void Awake() => Instance = this;
@@ -146,6 +147,14 @@ public class UpgradeManager : MonoBehaviour
                 break;
             case 11: // 방어력
                 if (ps != null) ps.defense += 5;
+                break;
+            case 12: // 공격 범위
+                if (aa != null) aa.attackRange  += 1f;
+                if (sa != null) sa.attackRange  += 1f;
+                if (io != null) { io.damageRange += 0.3f; io.orbScale  += 0.05f; }
+                if (ta != null) ta.starScale  += 0.05f;
+                if (ba != null) ba.arrowScale += 0.05f;
+                if (ca != null) ca.explosionRadius += 0.5f;
                 break;
 
             case 5: // 히어로 검 강화

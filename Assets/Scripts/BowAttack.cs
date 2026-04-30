@@ -6,6 +6,7 @@ public class BowAttack : MonoBehaviour
     public float  projectileSpeed = 14f;
     public Sprite arrowSprite;
     public int    weaponLevel     = 1;
+    public float  arrowScale      = 0.3f;
 
     private float            timer;
     private PlayerController pc;
@@ -43,7 +44,7 @@ public class BowAttack : MonoBehaviour
     {
         var go = new GameObject("BowArrow");
         go.transform.position   = transform.position;
-        go.transform.localScale = new Vector3(0.3f, 0.3f, 1f);
+        go.transform.localScale = new Vector3(arrowScale, arrowScale, 1f);
         go.transform.rotation   = Quaternion.Euler(0f, 0f, Mathf.Atan2(dir.y, dir.x) * Mathf.Rad2Deg - 50f);
 
         var sr = go.AddComponent<SpriteRenderer>();

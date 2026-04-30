@@ -287,7 +287,7 @@ public class SceneSetup
         var gameUI = new GameObject("GameUI").AddComponent<GameUI>();
 
         // 업그레이드 아이콘 (id 순: 0=공격속도, 1=공격력, 2=이동속도, 3=최대HP, 4=흡수범위)
-        gameUI.upgradeIcons = new Sprite[12];
+        gameUI.upgradeIcons = new Sprite[13];
         var ctSprites    = LoadPlayerSprites("status/Ct");     if (ctSprites.Length    > 0) gameUI.upgradeIcons[0] = ctSprites[0];
         var dmgSprites   = LoadPlayerSprites("status/damage"); if (dmgSprites.Length   > 0) gameUI.upgradeIcons[1] = dmgSprites[0];
         var spdSprites   = LoadPlayerSprites("status/speed");  if (spdSprites.Length   > 0) gameUI.upgradeIcons[2] = spdSprites[0];
@@ -295,6 +295,7 @@ public class SceneSetup
         var jaSprites    = LoadPlayerSprites("status/Ja");     if (jaSprites.Length    > 0) gameUI.upgradeIcons[4] = jaSprites[0];
         var tsSprites    = LoadPlayerSprites("status/Ts");     if (tsSprites.Length    > 0) gameUI.upgradeIcons[10] = tsSprites[0];
         var amSprites    = LoadPlayerSprites("status/am");     if (amSprites.Length    > 0) gameUI.upgradeIcons[11] = amSprites[0];
+        var sizeSprites  = LoadPlayerSprites("status/size");   if (sizeSprites.Length  > 0) gameUI.upgradeIcons[12] = sizeSprites[0];
         // 무기 강화 아이콘 (id 5~9: 히어로, 썬콜, 나이트로드, 캐논슈터, 보우마스터)
         var swW2Sprites  = LoadPlayerSprites("Weapon/attack"); if (swW2Sprites.Length  > 0) gameUI.upgradeIcons[5] = swW2Sprites[0];
         var iceW2Sprites = LoadPlayerSprites("Weapon/ice_w");  if (iceW2Sprites.Length > 0) gameUI.upgradeIcons[6] = iceW2Sprites[0];
