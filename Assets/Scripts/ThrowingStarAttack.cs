@@ -8,6 +8,7 @@ public class ThrowingStarAttack : MonoBehaviour
     public float  burstDelay      = 0.12f;
     public float  projectileSpeed = 16f;
     public Sprite starSprite;
+    public int    weaponLevel     = 1;
 
     private float timer;
 

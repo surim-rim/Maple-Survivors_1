@@ -8,6 +8,9 @@ public class IceOrbAttack : MonoBehaviour
     public float  damageRange     = 1.5f;
     public float  lifetime        = 4f;
     public Sprite orbSprite;
+    public int    weaponLevel      = 1;
+    public int    orbCount         = 1;
+    public float  damageMultiplier = 1f;
 
     private float timer;
 
@@ -17,19 +20,34 @@ public class IceOrbAttack : MonoBehaviour
         if (timer >= attackInterval)
         {
             timer = 0f;
-            FireOrb();
+            FireOrbs();
         }
     }
 
-    void FireOrb()
+    void FireOrbs()
     {
         var target = FindNearestEnemy();
-        Vector2 dir = target != null
+        Vector2 baseDir = target != null
             ? ((Vector2)target.position - (Vector2)transform.position).normalized
             : Vector2.right;
 
-        int dmg = PlayerStats.Instance != null ? Mathf.Max(1, PlayerStats.Instance.damage / 3) : 5;
+        int dmg = PlayerStats.Instance != null
+            ? Mathf.Max(1, (int)(PlayerStats.Instance.damage / 2f * damageMultiplier))
+            : 5;
 
+        float spreadAngle = orbCount > 1 ? 20f : 0f;
+        float startAngle  = -(orbCount - 1) * spreadAngle / 2f;
+
+        for (int i = 0; i < orbCount; i++)
+        {
+            float   angle = startAngle + i * spreadAngle;
+            Vector2 dir   = Quaternion.Euler(0f, 0f, angle) * baseDir;
+            SpawnOrb(dir, dmg);
+        }
+    }
+
+    void SpawnOrb(Vector2 dir, int dmg)
+    {
         var go = new GameObject("IceOrb");
         go.transform.position   = transform.position;
         go.transform.localScale = new Vector3(0.35f, 0.35f, 1f);

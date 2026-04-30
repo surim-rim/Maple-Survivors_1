@@ -31,9 +31,15 @@ public class SceneSetup
         Sprite     gemSprite  = CreateCircleSprite("XPGem", new Color(0.2f, 1f, 0.4f), 24);
         GameObject gemPrefab  = CreateXPGemPrefab(gemSprite);
 
-        // 보스 스프라이트 & 프리팹
-        Sprite     bossSprite = CreateCircleSprite("Boss", new Color(0.6f, 0f, 0.8f), 128);
-        GameObject bossPrefab = CreateBossPrefab(bossSprite, gemPrefab);
+        // 보스 프리팹 5종 (순서대로 스폰)
+        GameObject[] bossPrefabs = new GameObject[]
+        {
+            CreateBossPrefabWithSprites("MixGolem", LoadPlayerSprites("boss/mg1","boss/mg2"), gemPrefab, 0.5f, 500,  1.5f, 25, 10),
+            CreateBossPrefabWithSprites("Octopus",  LoadPlayerSprites("boss/op1","boss/op2"), gemPrefab, 0.5f, 700,  2.0f, 30, 15),
+            CreateBossPrefabWithSprites("FireBoar", LoadPlayerSprites("boss/fb1","boss/fb2"), gemPrefab, 0.5f, 900,  2.5f, 35, 20),
+            CreateBossPrefabWithSprites("Stumpy",   LoadPlayerSprites("boss/xt1","boss/xt2"), gemPrefab, 0.5f, 1200, 2.0f, 40, 25),
+            CreateBossPrefabWithSprites("JrBalrog", LoadPlayerSprites("boss/jb1","boss/jb2"), gemPrefab, 0.6f, 1500, 1.8f, 50, 30),
+        };
 
         // 프리팹 생성
         GameObject projectilePrefab = CreateProjectilePrefab(snailFirst, snailSprites);
@@ -41,15 +47,15 @@ public class SceneSetup
         // 9종 몹 프리팹
         GameObject[] enemyPrefabs = new GameObject[]
         {
-            CreateEnemyPrefabWithSprites("Red", LoadPlayerSprites("red1","red2"), gemPrefab, 0.15f),
-            CreateEnemyPrefabWithSprites("Pig", LoadPlayerSprites("pig1","pig2"), gemPrefab, 0.25f),
-            CreateEnemyPrefabWithSprites("Eye", LoadPlayerSprites("eye1","eye2"), gemPrefab, 0.3f),
-            CreateEnemyPrefabWithSprites("Sl",  LoadPlayerSprites("sl1", "sl2"),  gemPrefab, 0.3f),
-            CreateEnemyPrefabWithSprites("Mu",  LoadPlayerSprites("mu1", "mu2"),  gemPrefab, 0.2f),
-            CreateEnemyPrefabWithSprites("G",   LoadPlayerSprites("g1",  "g2"),   gemPrefab, 0.15f),
-            CreateEnemyPrefabWithSprites("Ss",  LoadPlayerSprites("ss1", "ss2"),  gemPrefab, 0.15f),
-            CreateEnemyPrefabWithSprites("B",   LoadPlayerSprites("b1",  "b2"),   gemPrefab, 0.25f),
-            CreateEnemyPrefabWithSprites("D",   LoadPlayerSprites("d1",  "d2"),   gemPrefab, 0.25f),
+            CreateEnemyPrefabWithSprites("Red", LoadPlayerSprites("mob/red1","mob/red2"), gemPrefab, 0.15f),
+            CreateEnemyPrefabWithSprites("Pig", LoadPlayerSprites("mob/pig1","mob/pig2"), gemPrefab, 0.25f),
+            CreateEnemyPrefabWithSprites("Eye", LoadPlayerSprites("mob/eye1","mob/eye2"), gemPrefab, 0.3f),
+            CreateEnemyPrefabWithSprites("Sl",  LoadPlayerSprites("mob/sl1", "mob/sl2"),  gemPrefab, 0.3f),
+            CreateEnemyPrefabWithSprites("Mu",  LoadPlayerSprites("mob/mu1", "mob/mu2"),  gemPrefab, 0.2f),
+            CreateEnemyPrefabWithSprites("G",   LoadPlayerSprites("mob/g1",  "mob/g2"),   gemPrefab, 0.15f),
+            CreateEnemyPrefabWithSprites("Ss",  LoadPlayerSprites("mob/ss1", "mob/ss2"),  gemPrefab, 0.15f),
+            CreateEnemyPrefabWithSprites("B",   LoadPlayerSprites("mob/b1",  "mob/b2"),   gemPrefab, 0.25f),
+            CreateEnemyPrefabWithSprites("D",   LoadPlayerSprites("mob/d1",  "mob/d2"),   gemPrefab, 0.25f),
         };
 
         // 씬 오브젝트 배치
@@ -57,7 +63,7 @@ public class SceneSetup
         GameObject player = CreatePlayer(firstSprite, rightSprites, leftSprites, projectilePrefab);
         CreateEnemySpawner(enemyPrefabs);
         SetupCamera(player.transform);
-        CreateManagers(player);
+        CreateManagers(player, bossPrefabs);
 
         EditorSceneManager.MarkSceneDirty(EditorSceneManager.GetActiveScene());
         Debug.Log("[Maple Survivors] Phase 2 씬 세팅 완료! Ctrl+S 로 씬을 저장하세요.");
@@ -170,15 +176,13 @@ public class SceneSetup
     }
 
     // ── Boss 프리팹 ───────────────────────────────────────
-    static GameObject CreateBossPrefab(Sprite sprite, GameObject gemPrefab)
+    static GameObject CreateBossPrefabWithSprites(string name, Sprite[] sprites, GameObject gemPrefab,
+                                                   float visualScale = 0.5f, int maxHP = 500,
+                                                   float moveSpeed = 1.5f, int contactDamage = 25,
+                                                   int xpDropCount = 10)
     {
-        var obj = new GameObject("Boss");
+        var obj = new GameObject(name);
         obj.tag = "Enemy";
-        obj.transform.localScale = new Vector3(0.8f, 0.8f, 1f);
-
-        var sr = obj.AddComponent<SpriteRenderer>();
-        sr.sprite       = sprite;
-        sr.sortingOrder = 1;
 
         var rb = obj.AddComponent<Rigidbody2D>();
         rb.gravityScale = 0f;
@@ -188,12 +192,26 @@ public class SceneSetup
 
         var col = obj.AddComponent<CircleCollider2D>();
         col.isTrigger = false;
-        col.radius    = 0.5f;
+        col.radius    = 2.0f;
 
         var boss = obj.AddComponent<BossEnemy>();
-        boss.xpGemPrefab = gemPrefab;
+        boss.xpGemPrefab   = gemPrefab;
+        boss.sprites       = sprites;
+        boss.maxHP         = maxHP;
+        boss.moveSpeed     = moveSpeed;
+        boss.contactDamage = contactDamage;
+        boss.xpDropCount   = xpDropCount;
 
-        var prefab = PrefabUtility.SaveAsPrefabAsset(obj, "Assets/Prefabs/Boss.prefab");
+        var visual = new GameObject("Visual");
+        visual.transform.SetParent(obj.transform);
+        visual.transform.localPosition = Vector3.zero;
+        visual.transform.localScale    = new Vector3(visualScale, visualScale, 1f);
+
+        var sr = visual.AddComponent<SpriteRenderer>();
+        if (sprites != null && sprites.Length > 0) sr.sprite = sprites[0];
+        sr.sortingOrder = 1;
+
+        var prefab = PrefabUtility.SaveAsPrefabAsset(obj, $"Assets/Prefabs/{name}Boss.prefab");
         Object.DestroyImmediate(obj);
         return prefab;
     }
@@ -252,7 +270,7 @@ public class SceneSetup
     }
 
     // ── Managers ──────────────────────────────────────────
-    static void CreateManagers(GameObject player)
+    static void CreateManagers(GameObject player, GameObject[] bossPrefabs)
     {
         // PlayerStats — Player 오브젝트에 붙임
         if (player.GetComponent<PlayerStats>() == null)
@@ -269,10 +287,20 @@ public class SceneSetup
         var gameUI = new GameObject("GameUI").AddComponent<GameUI>();
 
         // 업그레이드 아이콘 (id 순: 0=공격속도, 1=공격력, 2=이동속도, 3=최대HP, 4=흡수범위)
-        gameUI.upgradeIcons = new Sprite[5];
+        gameUI.upgradeIcons = new Sprite[12];
+        var ctSprites    = LoadPlayerSprites("status/Ct");     if (ctSprites.Length    > 0) gameUI.upgradeIcons[0] = ctSprites[0];
         var dmgSprites   = LoadPlayerSprites("status/damage"); if (dmgSprites.Length   > 0) gameUI.upgradeIcons[1] = dmgSprites[0];
         var spdSprites   = LoadPlayerSprites("status/speed");  if (spdSprites.Length   > 0) gameUI.upgradeIcons[2] = spdSprites[0];
         var hpSprites    = LoadPlayerSprites("status/hp");     if (hpSprites.Length    > 0) gameUI.upgradeIcons[3] = hpSprites[0];
+        var jaSprites    = LoadPlayerSprites("status/Ja");     if (jaSprites.Length    > 0) gameUI.upgradeIcons[4] = jaSprites[0];
+        var tsSprites    = LoadPlayerSprites("status/Ts");     if (tsSprites.Length    > 0) gameUI.upgradeIcons[10] = tsSprites[0];
+        var amSprites    = LoadPlayerSprites("status/am");     if (amSprites.Length    > 0) gameUI.upgradeIcons[11] = amSprites[0];
+        // 무기 강화 아이콘 (id 5~9: 히어로, 썬콜, 나이트로드, 캐논슈터, 보우마스터)
+        var swW2Sprites  = LoadPlayerSprites("Weapon/attack"); if (swW2Sprites.Length  > 0) gameUI.upgradeIcons[5] = swW2Sprites[0];
+        var iceW2Sprites = LoadPlayerSprites("Weapon/ice_w");  if (iceW2Sprites.Length > 0) gameUI.upgradeIcons[6] = iceW2Sprites[0];
+        var niW2Sprites  = LoadPlayerSprites("Weapon/ni_w");   if (niW2Sprites.Length  > 0) gameUI.upgradeIcons[7] = niW2Sprites[0];
+        var caW2Sprites  = LoadPlayerSprites("Weapon/ca_w");   if (caW2Sprites.Length  > 0) gameUI.upgradeIcons[8] = caW2Sprites[0];
+        var boW2Sprites  = LoadPlayerSprites("Weapon/boma_w"); if (boW2Sprites.Length  > 0) gameUI.upgradeIcons[9] = boW2Sprites[0];
 
         // DamageTextManager
         var existingDT = GameObject.Find("DamageTextManager");
@@ -283,8 +311,7 @@ public class SceneSetup
         var existingGM = GameObject.Find("GameManager");
         if (existingGM != null) Object.DestroyImmediate(existingGM);
         var gm = new GameObject("GameManager").AddComponent<GameManager>();
-        var bossPrefab = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Prefabs/Boss.prefab");
-        if (bossPrefab != null) gm.bossPrefab = bossPrefab;
+        if (bossPrefabs != null) gm.bossPrefabs = bossPrefabs;
 
         // PauseMenu
         var existingPM = GameObject.Find("PauseMenu");

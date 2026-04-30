@@ -2,9 +2,11 @@ using UnityEngine;
 
 public class SwordAttack : MonoBehaviour
 {
-    public float  attackInterval = 0.8f;
-    public float  attackRange    = 5f;
-    public int    damage         = 20;
+    public float  attackInterval    = 0.8f;
+    public float  attackRange       = 5f;
+    public int    damage            = 20;
+    public int    weaponLevel       = 1;
+    public int    weaponDamageBonus = 0;
     public float  effectOffset   = 1.3f;
     public Sprite slashSprite;
 
@@ -22,7 +24,7 @@ public class SwordAttack : MonoBehaviour
     void Update()
     {
         if (PlayerStats.Instance != null)
-            damage = PlayerStats.Instance.damage;
+            damage = PlayerStats.Instance.damage + weaponDamageBonus;
 
         timer += Time.deltaTime;
         if (timer >= attackInterval)
@@ -60,7 +62,8 @@ public class SwordAttack : MonoBehaviour
     {
         var go = new GameObject("SlashEffect");
         go.transform.position   = transform.position + (Vector3)(facing * effectOffset);
-        go.transform.localScale = new Vector3(0.5f, 0.5f, 1f);
+        float scale = 0.5f * (attackRange / 5f);
+        go.transform.localScale = new Vector3(scale, scale, 1f);
 
         float angle = Mathf.Atan2(facing.y, facing.x) * Mathf.Rad2Deg + 180f;
         go.transform.rotation = Quaternion.Euler(0f, 0f, angle);

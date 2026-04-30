@@ -15,6 +15,7 @@ public class PlayerStats : MonoBehaviour
     public int damage = 20;
     public float attackInterval = 0.8f;
     public float gemPickupRadius = 3f;
+    public int defense = 0;
 
     public event Action OnLevelUp;
     public event Action OnStatsChanged;

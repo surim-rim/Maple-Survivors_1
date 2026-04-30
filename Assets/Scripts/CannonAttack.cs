@@ -8,6 +8,8 @@ public class CannonAttack : MonoBehaviour
     public float  burnDuration    = 5f;
     public float  burnInterval    = 0.5f;
     public Sprite cannonballSprite;
+    public int    weaponLevel      = 1;
+    public float  damageMultiplier = 1f;
 
     private float timer;
 
@@ -27,7 +29,7 @@ public class CannonAttack : MonoBehaviour
         Vector2 offset    = Random.insideUnitCircle.normalized * Random.Range(2.2f, attackRange);
         Vector2 targetPos = (Vector2)transform.position + offset;
 
-        int dmg    = PlayerStats.Instance != null ? PlayerStats.Instance.damage * 2 : 40;
+        int dmg    = PlayerStats.Instance != null ? (int)(PlayerStats.Instance.damage * 2 * damageMultiplier) : 40;
         int dotDmg = PlayerStats.Instance != null ? Mathf.Max(1, PlayerStats.Instance.damage / 2) : 10;
 
         var go = new GameObject("Cannonball");

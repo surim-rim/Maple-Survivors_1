@@ -5,6 +5,7 @@ public class BowAttack : MonoBehaviour
     public float  attackInterval  = 1.2f;
     public float  projectileSpeed = 14f;
     public Sprite arrowSprite;
+    public int    weaponLevel     = 1;
 
     private float            timer;
     private PlayerController pc;
@@ -23,9 +24,23 @@ public class BowAttack : MonoBehaviour
 
     void FireArrow()
     {
-        Vector2 dir = pc != null ? pc.FacingDir : Vector2.right;
-        int     dmg = PlayerStats.Instance != null ? PlayerStats.Instance.damage : 20;
+        Vector2 baseDir = pc != null ? pc.FacingDir : Vector2.right;
+        int     dmg     = PlayerStats.Instance != null ? PlayerStats.Instance.damage : 20;
 
+        float spreadAngle = 20f;
+        float totalSpread = (weaponLevel - 1) * spreadAngle;
+        float startAngle  = -totalSpread / 2f;
+
+        for (int i = 0; i < weaponLevel; i++)
+        {
+            float   angle = startAngle + i * spreadAngle;
+            Vector2 dir   = Quaternion.Euler(0f, 0f, angle) * baseDir;
+            SpawnArrow(dir, dmg);
+        }
+    }
+
+    void SpawnArrow(Vector2 dir, int dmg)
+    {
         var go = new GameObject("BowArrow");
         go.transform.position   = transform.position;
         go.transform.localScale = new Vector3(0.3f, 0.3f, 1f);

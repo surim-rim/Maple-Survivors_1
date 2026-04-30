@@ -18,6 +18,8 @@ public class CharacterSelectUI : MonoBehaviour
     public Sprite[]           characterSprites = new Sprite[6];
     public CharSpriteSet[]    charSpriteSets   = new CharSpriteSet[6];
 
+    public static int ActiveCharacterId = 0;
+
     private bool selected;
     private bool showingTitle = true;
     private int  selectedChar = 1;
@@ -307,6 +309,7 @@ public class CharacterSelectUI : MonoBehaviour
             }
         }
 
+        ActiveCharacterId = id;
         selected = true;
         Time.timeScale = 1f;
         Destroy(gameObject);

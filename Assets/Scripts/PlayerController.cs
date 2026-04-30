@@ -95,7 +95,8 @@ public class PlayerController : MonoBehaviour
         if (Time.time - lastDamageTime < damageCooldown) return;
         lastDamageTime = Time.time;
 
-        CurrentHP -= damage;
+        int def = PlayerStats.Instance != null ? PlayerStats.Instance.defense : 0;
+        CurrentHP -= Mathf.Max(1, damage - def);
         if (CurrentHP <= 0)
             Die();
     }

@@ -15,8 +15,9 @@ public class GameManager : MonoBehaviour
     public float EnemySpeedMultiplier => 1f + ElapsedTime / 120f; // 2분마다 +100%
 
     [Header("Boss")]
-    public GameObject bossPrefab;
-    private float nextBossTime = 60f;
+    public GameObject[] bossPrefabs;
+    private int   bossIndex    = 0;
+    private float nextBossTime = 180f;
 
     void Awake() => Instance = this;
 
@@ -26,22 +27,24 @@ public class GameManager : MonoBehaviour
 
         ElapsedTime += Time.deltaTime;
 
-        if (bossPrefab != null && ElapsedTime >= nextBossTime)
+        if (bossPrefabs != null && bossIndex < bossPrefabs.Length && ElapsedTime >= nextBossTime)
         {
             SpawnBoss();
-            nextBossTime += 60f;
+            bossIndex++;
+            nextBossTime += 180f;
         }
     }
 
     void SpawnBoss()
     {
+        if (bossPrefabs == null || bossIndex >= bossPrefabs.Length) return;
         var player = GameObject.FindGameObjectWithTag("Player");
         if (player == null) return;
 
         float angle = Random.Range(0f, 360f) * Mathf.Deg2Rad;
         Vector2 offset = new Vector2(Mathf.Cos(angle), Mathf.Sin(angle)) * 15f;
-        Instantiate(bossPrefab, player.transform.position + (Vector3)offset, Quaternion.identity);
-        Debug.Log("[GameManager] 보스 스폰!");
+        Instantiate(bossPrefabs[bossIndex], player.transform.position + (Vector3)offset, Quaternion.identity);
+        Debug.Log($"[GameManager] 보스 {bossIndex + 1} 스폰!");
     }
 
     public void OnPlayerDied()
