@@ -11,6 +11,7 @@ public class SceneSetup
         // 태그 등록
         AddTag("Player");
         AddTag("Enemy");
+        AddTag("Box");
 
         // 폴더 생성
         EnsureFolder("Assets/Prefabs");
@@ -28,8 +29,8 @@ public class SceneSetup
                                 : CreateCircleSprite("Projectile", new Color(1f, 1f, 0.2f), 32);
 
         // XP 젬 스프라이트 & 프리팹
-        Sprite     gemSprite  = CreateCircleSprite("XPGem", new Color(0.2f, 1f, 0.4f), 24);
-        GameObject gemPrefab  = CreateXPGemPrefab(gemSprite);
+        Sprite     gemSprite = LoadPlayerSprites("XPG")[0];
+        GameObject gemPrefab = CreateXPGemPrefab(gemSprite);
 
         // 보스 프리팹 5종 (순서대로 스폰)
         GameObject[] bossPrefabs = new GameObject[]
@@ -58,12 +59,25 @@ public class SceneSetup
             CreateEnemyPrefabWithSprites("D",   LoadPlayerSprites("mob/d1",  "mob/d2"),   gemPrefab, 0.25f),
         };
 
+        // 랜덤 박스 & 아이템 프리팹
+        GameObject[] itemPrefabs = new GameObject[]
+        {
+            CreateRandomItemPrefab("RandomItem_Heal",   LoadPlayerSprites("RandomItem/heal")[0],   RandomItem.ItemType.Heal),
+            CreateRandomItemPrefab("RandomItem_Magnet", LoadPlayerSprites("RandomItem/magnet")[0], RandomItem.ItemType.Magnet),
+            CreateRandomItemPrefab("RandomItem_Gold1",  LoadPlayerSprites("RandomItem/mo1")[0],    RandomItem.ItemType.Gold1),
+            CreateRandomItemPrefab("RandomItem_Gold2",  LoadPlayerSprites("RandomItem/mo2")[0],    RandomItem.ItemType.Gold2),
+            CreateRandomItemPrefab("RandomItem_Gold3",  LoadPlayerSprites("RandomItem/mo3")[0],    RandomItem.ItemType.Gold3),
+            CreateRandomItemPrefab("RandomItem_Gold4",  LoadPlayerSprites("RandomItem/mo4")[0],    RandomItem.ItemType.Gold4),
+        };
+        GameObject boxPrefab = CreateRandomBoxPrefab(LoadPlayerSprites("RandomItem/rbox")[0], itemPrefabs);
+
         // 씬 오브젝트 배치
         CreateBackground();
         GameObject player = CreatePlayer(firstSprite, rightSprites, leftSprites, projectilePrefab);
         CreateEnemySpawner(enemyPrefabs);
         SetupCamera(player.transform);
         CreateManagers(player, bossPrefabs);
+        CreateRandomBoxSpawner(boxPrefab);
 
         EditorSceneManager.MarkSceneDirty(EditorSceneManager.GetActiveScene());
         Debug.Log("[Maple Survivors] Phase 2 씬 세팅 완료! Ctrl+S 로 씬을 저장하세요.");
@@ -220,7 +234,7 @@ public class SceneSetup
     static GameObject CreateXPGemPrefab(Sprite sprite)
     {
         var obj = new GameObject("XPGem");
-        obj.transform.localScale = new Vector3(0.5f, 0.5f, 1f);
+        obj.transform.localScale = new Vector3(0.1f, 0.1f, 0.2f);
 
         var sr = obj.AddComponent<SpriteRenderer>();
         sr.sprite       = sprite;
@@ -239,6 +253,75 @@ public class SceneSetup
         var prefab = PrefabUtility.SaveAsPrefabAsset(obj, "Assets/Prefabs/XPGem.prefab");
         Object.DestroyImmediate(obj);
         return prefab;
+    }
+
+    // ── 랜덤 박스 프리팹 ──────────────────────────────────────
+    static GameObject CreateRandomBoxPrefab(Sprite boxSprite, GameObject[] itemPrefabs)
+    {
+        var obj = new GameObject("RandomBox");
+        obj.tag = "Box";
+        obj.transform.localScale = new Vector3(0.3f, 0.3f, 1f);
+
+        var sr = obj.AddComponent<SpriteRenderer>();
+        sr.sprite       = boxSprite;
+        sr.sortingOrder = 2;
+
+        var rb = obj.AddComponent<Rigidbody2D>();
+        rb.gravityScale = 0f;
+        rb.bodyType     = RigidbodyType2D.Kinematic;
+        rb.constraints  = RigidbodyConstraints2D.FreezeAll;
+
+        var col = obj.AddComponent<CircleCollider2D>();
+        col.isTrigger = true;
+        col.radius    = 0.5f;
+
+        var box = obj.AddComponent<RandomBox>();
+        box.itemPrefabs = itemPrefabs;
+
+        var prefab = PrefabUtility.SaveAsPrefabAsset(obj, "Assets/Prefabs/RandomBox.prefab");
+        Object.DestroyImmediate(obj);
+        return prefab;
+    }
+
+    // ── 랜덤 아이템 프리팹 ────────────────────────────────────
+    static GameObject CreateRandomItemPrefab(string prefabName, Sprite sprite, RandomItem.ItemType type)
+    {
+        var obj = new GameObject(prefabName);
+        obj.transform.localScale = new Vector3(0.15f, 0.15f, 1f);
+
+        var sr = obj.AddComponent<SpriteRenderer>();
+        sr.sprite       = sprite;
+        sr.sortingOrder = 2;
+
+        var rb = obj.AddComponent<Rigidbody2D>();
+        rb.gravityScale = 0f;
+        rb.constraints  = RigidbodyConstraints2D.FreezeRotation;
+
+        var col = obj.AddComponent<CircleCollider2D>();
+        col.isTrigger = true;
+        col.radius    = 0.3f;
+
+        var item = obj.AddComponent<RandomItem>();
+        item.itemType = type;
+
+        var prefab = PrefabUtility.SaveAsPrefabAsset(obj, $"Assets/Prefabs/{prefabName}.prefab");
+        Object.DestroyImmediate(obj);
+        return prefab;
+    }
+
+    // ── 랜덤 박스 스포너 ──────────────────────────────────────
+    static void CreateRandomBoxSpawner(GameObject boxPrefab)
+    {
+        var existing = GameObject.Find("RandomBoxSpawner");
+        if (existing != null) Object.DestroyImmediate(existing);
+
+        var obj     = new GameObject("RandomBoxSpawner");
+        var spawner = obj.AddComponent<RandomBoxSpawner>();
+        spawner.boxPrefab      = boxPrefab;
+        spawner.spawnInterval  = 20f;
+        spawner.minDist        = 8f;
+        spawner.maxDist        = 14f;
+        spawner.maxBoxes       = 5;
     }
 
     // ── Enemy 프리팹 ───────────────────────────────────────
@@ -287,15 +370,17 @@ public class SceneSetup
         var gameUI = new GameObject("GameUI").AddComponent<GameUI>();
 
         // 업그레이드 아이콘 (id 순: 0=공격속도, 1=공격력, 2=이동속도, 3=최대HP, 4=흡수범위)
-        gameUI.upgradeIcons = new Sprite[13];
-        var ctSprites    = LoadPlayerSprites("status/Ct");     if (ctSprites.Length    > 0) gameUI.upgradeIcons[0] = ctSprites[0];
-        var dmgSprites   = LoadPlayerSprites("status/damage"); if (dmgSprites.Length   > 0) gameUI.upgradeIcons[1] = dmgSprites[0];
-        var spdSprites   = LoadPlayerSprites("status/speed");  if (spdSprites.Length   > 0) gameUI.upgradeIcons[2] = spdSprites[0];
-        var hpSprites    = LoadPlayerSprites("status/hp");     if (hpSprites.Length    > 0) gameUI.upgradeIcons[3] = hpSprites[0];
-        var jaSprites    = LoadPlayerSprites("status/Ja");     if (jaSprites.Length    > 0) gameUI.upgradeIcons[4] = jaSprites[0];
+        gameUI.upgradeIcons = new Sprite[15];
+        var ctSprites    = LoadPlayerSprites("status/Ct");     if (ctSprites.Length    > 0) gameUI.upgradeIcons[0]  = ctSprites[0];
+        var dmgSprites   = LoadPlayerSprites("status/damage"); if (dmgSprites.Length   > 0) gameUI.upgradeIcons[1]  = dmgSprites[0];
+        var spdSprites   = LoadPlayerSprites("status/speed");  if (spdSprites.Length   > 0) gameUI.upgradeIcons[2]  = spdSprites[0];
+        var hpSprites    = LoadPlayerSprites("status/hp");     if (hpSprites.Length    > 0) gameUI.upgradeIcons[3]  = hpSprites[0];
+        var jaSprites    = LoadPlayerSprites("status/Ja");     if (jaSprites.Length    > 0) gameUI.upgradeIcons[4]  = jaSprites[0];
         var tsSprites    = LoadPlayerSprites("status/Ts");     if (tsSprites.Length    > 0) gameUI.upgradeIcons[10] = tsSprites[0];
         var amSprites    = LoadPlayerSprites("status/am");     if (amSprites.Length    > 0) gameUI.upgradeIcons[11] = amSprites[0];
         var sizeSprites  = LoadPlayerSprites("status/size");   if (sizeSprites.Length  > 0) gameUI.upgradeIcons[12] = sizeSprites[0];
+        var rsSprites    = LoadPlayerSprites("status/rs");     if (rsSprites.Length    > 0) gameUI.upgradeIcons[13] = rsSprites[0];
+        var axpSprites   = LoadPlayerSprites("status/axp");    if (axpSprites.Length   > 0) gameUI.upgradeIcons[14] = axpSprites[0];
         // 무기 강화 아이콘 (id 5~9: 히어로, 썬콜, 나이트로드, 캐논슈터, 보우마스터)
         var swW2Sprites  = LoadPlayerSprites("Weapon/attack"); if (swW2Sprites.Length  > 0) gameUI.upgradeIcons[5] = swW2Sprites[0];
         var iceW2Sprites = LoadPlayerSprites("Weapon/ice_w");  if (iceW2Sprites.Length > 0) gameUI.upgradeIcons[6] = iceW2Sprites[0];
@@ -402,6 +487,7 @@ public class SceneSetup
         var pc = obj.AddComponent<PlayerController>();
         pc.rightSprites = rightSprites;
         pc.leftSprites  = leftSprites;
+        obj.AddComponent<PlayerHealthBar>();
 
         var autoAttack = obj.AddComponent<AutoAttack>();
         autoAttack.projectilePrefab = projectilePrefab;

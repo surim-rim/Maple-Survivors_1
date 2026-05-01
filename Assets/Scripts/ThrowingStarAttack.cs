@@ -90,9 +90,16 @@ public class StarProjectile : MonoBehaviour
 
     void OnTriggerEnter2D(Collider2D col)
     {
-        if (!col.CompareTag("Enemy")) return;
-        col.GetComponent<Enemy>()?.TakeDamage(damage);
-        col.GetComponent<BossEnemy>()?.TakeDamage(damage);
-        Destroy(gameObject);
+        if (col.CompareTag("Enemy"))
+        {
+            col.GetComponent<Enemy>()?.TakeDamage(damage);
+            col.GetComponent<BossEnemy>()?.TakeDamage(damage);
+            Destroy(gameObject);
+        }
+        else if (col.CompareTag("Box"))
+        {
+            col.GetComponent<RandomBox>()?.TakeDamage(damage);
+            Destroy(gameObject);
+        }
     }
 }

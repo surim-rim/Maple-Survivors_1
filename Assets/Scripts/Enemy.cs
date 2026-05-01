@@ -11,6 +11,8 @@ public class Enemy : MonoBehaviour
     public Sprite[] sprites;
     public float animFrameRate = 6f;
 
+    [HideInInspector] public Vector2 pushVelocity;
+
     private int currentHP;
     private Transform player;
     private Rigidbody2D rb;
@@ -52,7 +54,8 @@ public class Enemy : MonoBehaviour
         if (player == null || rb == null) return;
 
         Vector2 dir = ((Vector2)player.position - rb.position).normalized;
-        rb.velocity = dir * moveSpeed;
+        rb.velocity = dir * moveSpeed + pushVelocity;
+        pushVelocity = Vector2.MoveTowards(pushVelocity, Vector2.zero, Time.fixedDeltaTime * 15f);
 
         if (dir.x != 0)
             visual.localScale = new Vector3(

@@ -41,18 +41,20 @@ public class SwordAttack : MonoBehaviour
         var hits = Physics2D.OverlapCircleAll(transform.position, attackRange);
         foreach (var col in hits)
         {
-            if (!col.CompareTag("Enemy")) continue;
+            bool isEnemy = col.CompareTag("Enemy");
+            bool isBox   = col.CompareTag("Box");
+            if (!isEnemy && !isBox) continue;
 
-            // 바라보는 방향 기준 ±60° 안에 있는 적만 피격
-            Vector2 toEnemy = (col.transform.position - transform.position).normalized;
-            float angle = Vector2.Angle(facing, toEnemy);
+            Vector2 toTarget = (col.transform.position - transform.position).normalized;
+            float angle = Vector2.Angle(facing, toTarget);
             if (angle > HalfAngle) continue;
 
-            var enemy = col.GetComponent<Enemy>();
-            if (enemy != null) enemy.TakeDamage(damage);
-
-            var boss = col.GetComponent<BossEnemy>();
-            if (boss != null) boss.TakeDamage(damage);
+            if (isEnemy)
+            {
+                col.GetComponent<Enemy>()?.TakeDamage(damage);
+                col.GetComponent<BossEnemy>()?.TakeDamage(damage);
+            }
+            if (isBox) col.GetComponent<RandomBox>()?.TakeDamage(damage);
         }
 
         SpawnSlashEffect(facing);

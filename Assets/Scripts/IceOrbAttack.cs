@@ -106,9 +106,13 @@ public class IceOrbProjectile : MonoBehaviour
             damageTimer = 0f;
             foreach (var col in Physics2D.OverlapCircleAll(transform.position, damageRange))
             {
-                if (!col.CompareTag("Enemy")) continue;
-                col.GetComponent<Enemy>()?.TakeDamage(damage);
-                col.GetComponent<BossEnemy>()?.TakeDamage(damage);
+                if (col.CompareTag("Enemy"))
+                {
+                    col.GetComponent<Enemy>()?.TakeDamage(damage);
+                    col.GetComponent<BossEnemy>()?.TakeDamage(damage);
+                }
+                else if (col.CompareTag("Box"))
+                    col.GetComponent<RandomBox>()?.TakeDamage(damage);
             }
         }
     }

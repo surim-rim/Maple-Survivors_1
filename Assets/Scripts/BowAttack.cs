@@ -6,7 +6,7 @@ public class BowAttack : MonoBehaviour
     public float  projectileSpeed = 14f;
     public Sprite arrowSprite;
     public int    weaponLevel     = 1;
-    public float  arrowScale      = 0.3f;
+    public float  arrowScale      = 0.2f;
 
     private float            timer;
     private PlayerController pc;
@@ -70,6 +70,7 @@ public class BowProjectile : MonoBehaviour
     public float   lifetime = 4f;
 
     private float timer;
+    private System.Collections.Generic.HashSet<Collider2D> hit = new();
 
     void Update()
     {
@@ -80,9 +81,16 @@ public class BowProjectile : MonoBehaviour
 
     void OnTriggerEnter2D(Collider2D col)
     {
-        if (!col.CompareTag("Enemy")) return;
-        col.GetComponent<Enemy>()?.TakeDamage(damage);
-        col.GetComponent<BossEnemy>()?.TakeDamage(damage);
-        Destroy(gameObject);
+        if (col.CompareTag("Enemy"))
+        {
+            if (!hit.Add(col)) return;
+            col.GetComponent<Enemy>()?.TakeDamage(damage);
+            col.GetComponent<BossEnemy>()?.TakeDamage(damage);
+        }
+        else if (col.CompareTag("Box"))
+        {
+            if (!hit.Add(col)) return;
+            col.GetComponent<RandomBox>()?.TakeDamage(damage);
+        }
     }
 }

@@ -15,7 +15,9 @@ public class PlayerController : MonoBehaviour
     public float animFrameRate = 6f;
     [HideInInspector] public bool useFlipX = false; // 별도 left 스프라이트 없을 때 flipX로 방향 표현
 
-    public int CurrentHP { get; private set; }
+    public int  CurrentHP { get; private set; }
+    [HideInInspector] public bool hasRevive = false;
+    private bool reviveConsumed = false;
 
     private Vector2 lastFacingDir = Vector2.right;
     public Vector2 FacingDir => lastFacingDir;
@@ -57,6 +59,17 @@ public class PlayerController : MonoBehaviour
         next.x = Mathf.Clamp(next.x, mapMin.x, mapMax.x);
         next.y = Mathf.Clamp(next.y, mapMin.y, mapMax.y);
         rb.MovePosition(next);
+
+        // 주변 몹 밀어내기
+        foreach (var col in Physics2D.OverlapCircleAll(next, 0.5f))
+        {
+            if (!col.CompareTag("Enemy")) continue;
+            var enemy = col.GetComponent<Enemy>();
+            if (enemy == null) continue;
+            Vector2 pushDir = ((Vector2)col.transform.position - next).normalized;
+            if (pushDir == Vector2.zero) pushDir = Random.insideUnitCircle.normalized;
+            enemy.pushVelocity = pushDir * 7f;
+        }
     }
 
     void AnimateSprite()
@@ -108,6 +121,15 @@ public class PlayerController : MonoBehaviour
 
     void Die()
     {
+        if (hasRevive && !reviveConsumed)
+        {
+            reviveConsumed = true;
+            hasRevive      = false;
+            CurrentHP      = maxHP / 2;
+            lastDamageTime = Time.time + 0.5f;
+            GameUI.Instance?.ShowReviveMessage();
+            return;
+        }
         gameObject.SetActive(false);
         GameManager.Instance?.OnPlayerDied();
     }

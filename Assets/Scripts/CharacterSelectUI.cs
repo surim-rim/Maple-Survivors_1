@@ -23,6 +23,7 @@ public class CharacterSelectUI : MonoBehaviour
     private bool selected;
     private bool showingTitle = true;
     private int  selectedChar = 1;
+    private bool confirmMode  = false;
 
     private static readonly string[] CharNames = {
         "초보자", "히어로", "썬콜", "나이트로드", "캐논슈터", "보우마스터"
@@ -41,6 +42,46 @@ public class CharacterSelectUI : MonoBehaviour
     private static readonly bool[] CharUnlocked = { true, true, true, true, true, true };
 
     void Awake() => Time.timeScale = 0f;
+
+    void Update()
+    {
+        if (selected) return;
+
+        // 타이틀 화면: Enter/Space로 캐릭터 선택창 이동
+        if (showingTitle)
+        {
+            if (Input.GetKeyDown(KeyCode.Return) || Input.GetKeyDown(KeyCode.Space))
+                showingTitle = false;
+            return;
+        }
+
+        // W/S 또는 방향키로 목록 이동 (이동 시 확인 모드 해제)
+        bool navDown = Input.GetKeyDown(KeyCode.S) || Input.GetKeyDown(KeyCode.DownArrow);
+        bool navUp   = Input.GetKeyDown(KeyCode.W) || Input.GetKeyDown(KeyCode.UpArrow);
+        if (navDown || navUp)
+        {
+            confirmMode  = false;
+            int next = selectedChar + (navDown ? 1 : -1);
+            if (next < 1) next = 6;
+            if (next > 6) next = 1;
+            selectedChar = next;
+            return;
+        }
+
+        // Escape로 확인 모드 취소
+        if (Input.GetKeyDown(KeyCode.Escape))
+        {
+            confirmMode = false;
+            return;
+        }
+
+        // Enter: 1회 → 확인 모드, 2회 → 선택 확정
+        if (Input.GetKeyDown(KeyCode.Return) && CharUnlocked[selectedChar - 1])
+        {
+            if (!confirmMode) confirmMode = true;
+            else              SelectCharacter(selectedChar);
+        }
+    }
 
     void OnGUI()
     {
@@ -234,9 +275,18 @@ public class CharacterSelectUI : MonoBehaviour
 
         if (curUnlocked)
         {
-            GUI.color = new Color(0.25f, 0.7f, 0.3f, 1f);
-            if (GUI.Button(new Rect(btnX, btnY, btnW, btnH), "선택하기", btnStyle))
-                SelectCharacter(selectedChar);
+            if (confirmMode)
+            {
+                GUI.color = new Color(1f, 0.8f, 0.1f, 1f);
+                if (GUI.Button(new Rect(btnX, btnY, btnW, btnH), "확인 [Enter]", btnStyle))
+                    SelectCharacter(selectedChar);
+            }
+            else
+            {
+                GUI.color = new Color(0.25f, 0.7f, 0.3f, 1f);
+                if (GUI.Button(new Rect(btnX, btnY, btnW, btnH), "선택하기", btnStyle))
+                    SelectCharacter(selectedChar);
+            }
         }
         else
         {

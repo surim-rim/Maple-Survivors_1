@@ -29,6 +29,8 @@ public class XPGem : MonoBehaviour
             rb.MovePosition(Vector2.MoveTowards(rb.position, player.position, attractSpeed * Time.fixedDeltaTime));
     }
 
+    public void AttractNow() => attracting = true;
+
     void OnTriggerEnter2D(Collider2D other)
     {
         if (other.CompareTag("Player"))

@@ -62,15 +62,17 @@ public class Projectile : MonoBehaviour
 
         if (other.CompareTag("Enemy"))
         {
-            // 일반 적 또는 보스 모두 처리
             bool hit = false;
             var enemy = other.GetComponent<Enemy>();
             if (enemy != null) { enemy.TakeDamage(damage); hit = true; }
-
             var boss = other.GetComponent<BossEnemy>();
             if (boss != null) { boss.TakeDamage(damage); hit = true; }
-
             if (hit) Destroy(gameObject);
+        }
+        else if (other.CompareTag("Box"))
+        {
+            other.GetComponent<RandomBox>()?.TakeDamage(damage);
+            Destroy(gameObject);
         }
     }
 }

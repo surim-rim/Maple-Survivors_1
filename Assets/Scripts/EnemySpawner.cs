@@ -24,7 +24,8 @@ public class EnemySpawner : MonoBehaviour
         if (player == null || enemyPrefabs == null || enemyPrefabs.Length == 0) return;
 
         // 시간이 지날수록 스폰 간격 감소 (난이도 상승)
-        currentInterval = Mathf.Max(minInterval, initialInterval - Time.time * 0.02f);
+        float elapsed = GameManager.Instance != null ? GameManager.Instance.ElapsedTime : 0f;
+        currentInterval = Mathf.Max(minInterval, initialInterval - elapsed * 0.02f);
 
         timer += Time.deltaTime;
         if (timer >= currentInterval)

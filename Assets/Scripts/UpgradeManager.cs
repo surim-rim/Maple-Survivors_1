@@ -22,7 +22,11 @@ public class UpgradeManager : MonoBehaviour
         new UpgradeOption { id = 10, name = "투사체 속도 UP", description = "투사체 속도 +2" },
         new UpgradeOption { id = 11, name = "방어력 UP",      description = "방어력 +5, 피해 감소" },
         new UpgradeOption { id = 12, name = "공격 범위 UP",   description = "모든 공격 범위 및 이펙트 증가" },
+        new UpgradeOption { id = 13, name = "부활",           description = "사망 시 1회 부활 (게임당 1회)" },
+        new UpgradeOption { id = 14, name = "경험치 획득 UP", description = "경험치 획득량 +10%" },
     };
+
+    private bool reviveUsed = false;
 
     void Awake() => Instance = this;
 
@@ -47,6 +51,10 @@ public class UpgradeManager : MonoBehaviour
     List<UpgradeOption> PickRandom(int count)
     {
         var pool = new List<UpgradeOption>(AllUpgrades);
+
+        // 부활은 이미 선택한 경우 풀에서 제거
+        if (reviveUsed)
+            pool.RemoveAll(o => o.id == 13);
 
         var weaponOpt = GetWeaponUpgradeOption();
         if (weaponOpt != null)
@@ -148,6 +156,14 @@ public class UpgradeManager : MonoBehaviour
             case 11: // 방어력
                 if (ps != null) ps.defense += 5;
                 break;
+            case 13: // 부활
+                reviveUsed = true;
+                if (pc != null) pc.hasRevive = true;
+                break;
+            case 14: // 경험치 획득 UP
+                if (ps != null) ps.xpMultiplier += 0.1f;
+                break;
+
             case 12: // 공격 범위
                 if (aa != null) aa.attackRange  += 1f;
                 if (sa != null) sa.attackRange  += 1f;

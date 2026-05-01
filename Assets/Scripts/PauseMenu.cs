@@ -76,7 +76,7 @@ public class PauseMenu : MonoBehaviour
 
     void DrawPausePanel()
     {
-        float pw = 340f, ph = 470f;
+        float pw = 340f, ph = 574f;
         float px = (Screen.width  - pw) / 2f;
         float py = (Screen.height - ph) / 2f;
 
@@ -110,7 +110,7 @@ public class PauseMenu : MonoBehaviour
 
         // 구분선
         GUI.color = new Color(1f, 1f, 1f, 0.15f);
-        GUI.DrawTexture(new Rect(px + 20f, py + 280f, pw - 40f, 1f), Texture2D.whiteTexture);
+        GUI.DrawTexture(new Rect(px + 20f, py + 384f, pw - 40f, 1f), Texture2D.whiteTexture);
 
         float btnW = pw - 60f;
         float btnX = px + 30f;
@@ -118,17 +118,17 @@ public class PauseMenu : MonoBehaviour
 
         // 계속하기 버튼
         GUI.color = new Color(0.25f, 0.65f, 0.3f, 1f);
-        if (GUI.Button(new Rect(btnX, py + 296f, btnW, 44f), "계속하기", btnStyle))
+        if (GUI.Button(new Rect(btnX, py + 400f, btnW, 44f), "계속하기", btnStyle))
             Resume();
 
         // 설정 버튼
         GUI.color = new Color(0.3f, 0.45f, 0.7f, 1f);
-        if (GUI.Button(new Rect(btnX, py + 350f, btnW, 44f), "설정", btnStyle))
+        if (GUI.Button(new Rect(btnX, py + 454f, btnW, 44f), "설정", btnStyle))
             showSettings = true;
 
         // 나가기 버튼 (확인창 열기)
         GUI.color = new Color(0.6f, 0.25f, 0.25f, 1f);
-        if (GUI.Button(new Rect(btnX, py + 404f, btnW, 44f), "나가기", btnStyle))
+        if (GUI.Button(new Rect(btnX, py + 508f, btnW, 44f), "나가기", btnStyle))
             showExitConfirm = true;
 
         GUI.color = Color.white;
@@ -154,14 +154,18 @@ public class PauseMenu : MonoBehaviour
         float lineH = 26f;
         float vy = y;
 
-        DrawStatRow(x, vy, w, lineH, "레벨",       $"{ps?.level ?? 1}",            labelStyle, valueStyle); vy += lineH;
+        DrawStatRow(x, vy, w, lineH, "레벨",         $"{ps?.level ?? 1}",            labelStyle, valueStyle); vy += lineH;
         DrawStatRow(x, vy, w, lineH, "생존 시간",   $"{min:00}:{sec:00}",           labelStyle, valueStyle); vy += lineH;
         DrawStatRow(x, vy, w, lineH, "처치 수",     $"{ps?.killCount ?? 0}",        labelStyle, valueStyle); vy += lineH;
+        DrawStatRow(x, vy, w, lineH, "골드",        $"{ps?.gold ?? 0}",             labelStyle, valueStyle); vy += lineH;
         DrawStatRow(x, vy, w, lineH, "HP",          $"{pc?.CurrentHP ?? 0} / {pc?.maxHP ?? 0}", labelStyle, valueStyle); vy += lineH;
         DrawStatRow(x, vy, w, lineH, "공격력",      $"{ps?.damage ?? 0}",           labelStyle, valueStyle); vy += lineH;
+        DrawStatRow(x, vy, w, lineH, "방어력",      $"{ps?.defense ?? 0}",          labelStyle, valueStyle); vy += lineH;
         DrawStatRow(x, vy, w, lineH, "공격 속도",   $"{(ps != null ? (1f / ps.attackInterval).ToString("F1") : "-")} /s", labelStyle, valueStyle); vy += lineH;
-        DrawStatRow(x, vy, w, lineH, "이동 속도",   $"{pc?.moveSpeed ?? 0}",        labelStyle, valueStyle); vy += lineH;
-        DrawStatRow(x, vy, w, lineH, "젬 흡수 범위",$"{ps?.gemPickupRadius ?? 0}",  labelStyle, valueStyle);
+        DrawStatRow(x, vy, w, lineH, "이동 속도",   $"{pc?.moveSpeed ?? 0:F1}",     labelStyle, valueStyle); vy += lineH;
+        DrawStatRow(x, vy, w, lineH, "젬 흡수 범위",$"{ps?.gemPickupRadius ?? 0:F1}", labelStyle, valueStyle); vy += lineH;
+        DrawStatRow(x, vy, w, lineH, "경험치 배율", $"{(ps != null ? ps.xpMultiplier * 100f : 100f):F0}%", labelStyle, valueStyle); vy += lineH;
+        DrawStatRow(x, vy, w, lineH, "부활",        pc != null && pc.hasRevive ? "있음" : "없음", labelStyle, valueStyle);
     }
 
     void DrawStatRow(float x, float y, float w, float h,

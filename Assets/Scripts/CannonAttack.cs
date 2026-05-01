@@ -89,9 +89,13 @@ public class CannonProjectile : MonoBehaviour
         // 즉발 폭발 데미지
         foreach (var col in Physics2D.OverlapCircleAll(targetPos, explosionRadius))
         {
-            if (!col.CompareTag("Enemy")) continue;
-            col.GetComponent<Enemy>()?.TakeDamage(damage);
-            col.GetComponent<BossEnemy>()?.TakeDamage(damage);
+            if (col.CompareTag("Enemy"))
+            {
+                col.GetComponent<Enemy>()?.TakeDamage(damage);
+                col.GetComponent<BossEnemy>()?.TakeDamage(damage);
+            }
+            else if (col.CompareTag("Box"))
+                col.GetComponent<RandomBox>()?.TakeDamage(damage);
         }
 
         // 화염 지역 생성
@@ -154,9 +158,13 @@ public class BurnZone : MonoBehaviour
             damageTimer = 0f;
             foreach (var col in Physics2D.OverlapCircleAll(transform.position, radius))
             {
-                if (!col.CompareTag("Enemy")) continue;
-                col.GetComponent<Enemy>()?.TakeDamage(dotDamage);
-                col.GetComponent<BossEnemy>()?.TakeDamage(dotDamage);
+                if (col.CompareTag("Enemy"))
+                {
+                    col.GetComponent<Enemy>()?.TakeDamage(dotDamage);
+                    col.GetComponent<BossEnemy>()?.TakeDamage(dotDamage);
+                }
+                else if (col.CompareTag("Box"))
+                    col.GetComponent<RandomBox>()?.TakeDamage(dotDamage);
             }
         }
     }

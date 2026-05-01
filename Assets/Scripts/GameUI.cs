@@ -8,15 +8,50 @@ public class GameUI : MonoBehaviour
     public Sprite[] upgradeIcons = new Sprite[5]; // id 순서대로 (0~4)
 
     private List<UpgradeManager.UpgradeOption> upgradeChoices;
-    private bool showingUpgrades;
-    private bool gameOver;
+    private bool  showingUpgrades;
+    private bool  gameOver;
+    private int   selectedUpgradeIndex = 0;
+    private bool  upgradeConfirmMode   = false;
+    private float reviveMessageTimer   = 0f;
 
     void Awake() => Instance = this;
 
     public void ShowUpgradePanel(List<UpgradeManager.UpgradeOption> choices)
     {
-        upgradeChoices  = choices;
-        showingUpgrades = true;
+        upgradeChoices       = choices;
+        showingUpgrades      = true;
+        selectedUpgradeIndex = 0;
+        upgradeConfirmMode   = false;
+    }
+
+    void Update()
+    {
+        if (reviveMessageTimer > 0f)
+            reviveMessageTimer -= Time.deltaTime;
+
+        if (!showingUpgrades || upgradeChoices == null || upgradeChoices.Count == 0) return;
+
+        int count    = upgradeChoices.Count;
+        bool navRight = Input.GetKeyDown(KeyCode.D) || Input.GetKeyDown(KeyCode.RightArrow);
+        bool navLeft  = Input.GetKeyDown(KeyCode.A) || Input.GetKeyDown(KeyCode.LeftArrow);
+
+        if (navRight || navLeft)
+        {
+            upgradeConfirmMode   = false;
+            int next = selectedUpgradeIndex + (navRight ? 1 : -1);
+            if (next < 0)      next = count - 1;
+            if (next >= count) next = 0;
+            selectedUpgradeIndex = next;
+            return;
+        }
+
+        if (Input.GetKeyDown(KeyCode.Escape))  { upgradeConfirmMode = false; return; }
+
+        if (Input.GetKeyDown(KeyCode.Return))
+        {
+            if (!upgradeConfirmMode) upgradeConfirmMode = true;
+            else UpgradeManager.Instance?.ApplyUpgrade(upgradeChoices[selectedUpgradeIndex].id);
+        }
     }
 
     public void HideUpgradePanel()
@@ -34,9 +69,9 @@ public class GameUI : MonoBehaviour
         var pc = FindObjectOfType<PlayerController>();
         if (ps == null || pc == null) return;
 
-        DrawHPBar(pc);
         DrawXPBar(ps);
         DrawStats(ps);
+        if (reviveMessageTimer > 0f) DrawReviveMessage();
         if (showingUpgrades) DrawUpgradePanel();
     }
 
@@ -85,7 +120,12 @@ public class GameUI : MonoBehaviour
         GUI.Label(new Rect(10, 10, 160, 25), $"Lv. {ps.level}");
         GUI.Label(new Rect(10, 30, 160, 25), $"처치: {ps.killCount}");
         GUI.Label(new Rect(10, 50, 160, 25), $"시간: {min:00}:{sec:00}");
+        GUI.color = new Color(1f, 0.85f, 0.1f, 1f);
+        GUI.Label(new Rect(10, 70, 160, 25), $"골드: {ps.gold}");
+        GUI.color = Color.white;
     }
+
+    public void ShowReviveMessage() => reviveMessageTimer = 2f;
 
     public void ShowGameOver() => gameOver = true;
 
@@ -118,6 +158,20 @@ public class GameUI : MonoBehaviour
         GUI.color = Color.white;
     }
 
+    void DrawReviveMessage()
+    {
+        float alpha = Mathf.Clamp01(reviveMessageTimer);
+        var style = new GUIStyle(GUI.skin.label)
+        {
+            fontSize  = 48,
+            fontStyle = FontStyle.Bold,
+            alignment = TextAnchor.MiddleCenter
+        };
+        GUI.color = new Color(1f, 0.85f, 0.1f, alpha);
+        GUI.Label(new Rect(0, Screen.height * 0.35f, Screen.width, 70f), "부활!", style);
+        GUI.color = Color.white;
+    }
+
     void DrawUpgradePanel()
     {
         if (upgradeChoices == null) return;
@@ -147,8 +201,16 @@ public class GameUI : MonoBehaviour
             var opt = upgradeChoices[i];
             float cx = startX + i * (cardW + gap);
 
+            bool isSelected = (i == selectedUpgradeIndex);
+            bool isConfirm  = isSelected && upgradeConfirmMode;
+
             // 카드 배경
-            GUI.color = new Color(0.18f, 0.28f, 0.48f, 1f);
+            if (isConfirm)
+                GUI.color = new Color(0.45f, 0.35f, 0.08f, 1f);
+            else if (isSelected)
+                GUI.color = new Color(0.28f, 0.42f, 0.68f, 1f);
+            else
+                GUI.color = new Color(0.18f, 0.28f, 0.48f, 1f);
             GUI.DrawTexture(new Rect(cx, cardY, cardW, cardH), Texture2D.whiteTexture);
 
             // 이름
@@ -172,9 +234,18 @@ public class GameUI : MonoBehaviour
             GUI.Label(new Rect(cx + 10f, cardY + 112f, cardW - 20f, 72f), opt.description, descStyle);
 
             // 선택 버튼
-            GUI.color = new Color(0.25f, 0.6f, 0.25f, 1f);
-            if (GUI.Button(new Rect(cx + 12f, cardY + cardH - 46f, cardW - 24f, 36f), "선택"))
-                UpgradeManager.Instance?.ApplyUpgrade(opt.id);
+            if (isConfirm)
+            {
+                GUI.color = new Color(1f, 0.8f, 0.1f, 1f);
+                if (GUI.Button(new Rect(cx + 12f, cardY + cardH - 46f, cardW - 24f, 36f), "확인 [Enter]"))
+                    UpgradeManager.Instance?.ApplyUpgrade(opt.id);
+            }
+            else
+            {
+                GUI.color = new Color(0.25f, 0.6f, 0.25f, 1f);
+                if (GUI.Button(new Rect(cx + 12f, cardY + cardH - 46f, cardW - 24f, 36f), "선택"))
+                    UpgradeManager.Instance?.ApplyUpgrade(opt.id);
+            }
         }
 
         GUI.color = Color.white;
