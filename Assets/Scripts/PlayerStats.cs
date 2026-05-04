@@ -15,6 +15,9 @@ public class PlayerStats : MonoBehaviour
     public int damage = 20;
     public float attackInterval = 0.8f;
     public float gemPickupRadius = 3f;
+    public int defense = 0;
+    public float xpMultiplier = 1f;
+    public int gold = 0;
 
     public event Action OnLevelUp;
     public event Action OnStatsChanged;
@@ -23,11 +26,11 @@ public class PlayerStats : MonoBehaviour
 
     public void AddXP(int amount)
     {
-        currentXP += amount;
-        if (currentXP >= xpToNextLevel)
+        currentXP += Mathf.RoundToInt(amount * xpMultiplier);
+        while (currentXP >= xpToNextLevel)
         {
             currentXP -= xpToNextLevel;
-            xpToNextLevel = Mathf.RoundToInt(xpToNextLevel * 1.3f);
+            xpToNextLevel = Mathf.RoundToInt(xpToNextLevel * 1.2f);
             level++;
             OnLevelUp?.Invoke();
         }

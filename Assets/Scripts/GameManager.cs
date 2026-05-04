@@ -15,8 +15,12 @@ public class GameManager : MonoBehaviour
     public float EnemySpeedMultiplier => 1f + ElapsedTime / 120f; // 2분마다 +100%
 
     [Header("Boss")]
-    public GameObject bossPrefab;
-    private float nextBossTime = 60f;
+    public GameObject[] bossPrefabs;
+    public float mapBound      = 74f;
+    private int   bossIndex    = 0;
+    private float nextBossTime = 180f;
+    private bool  lastBossSpawned   = false;
+    private float lastBossSpawnTime = 0f;
 
     void Awake() => Instance = this;
 
@@ -26,22 +30,38 @@ public class GameManager : MonoBehaviour
 
         ElapsedTime += Time.deltaTime;
 
-        if (bossPrefab != null && ElapsedTime >= nextBossTime)
+        if (bossPrefabs != null && bossIndex < bossPrefabs.Length && ElapsedTime >= nextBossTime)
         {
             SpawnBoss();
-            nextBossTime += 60f;
+            bossIndex++;
+            nextBossTime += 180f;
+            if (bossIndex >= bossPrefabs.Length)
+            {
+                lastBossSpawned   = true;
+                lastBossSpawnTime = ElapsedTime;
+            }
+        }
+
+        if (lastBossSpawned && ElapsedTime >= lastBossSpawnTime + 60f)
+        {
+            lastBossSpawned = false;
+            OnGameClear();
         }
     }
 
     void SpawnBoss()
     {
+        if (bossPrefabs == null || bossIndex >= bossPrefabs.Length) return;
         var player = GameObject.FindGameObjectWithTag("Player");
         if (player == null) return;
 
         float angle = Random.Range(0f, 360f) * Mathf.Deg2Rad;
         Vector2 offset = new Vector2(Mathf.Cos(angle), Mathf.Sin(angle)) * 15f;
-        Instantiate(bossPrefab, player.transform.position + (Vector3)offset, Quaternion.identity);
-        Debug.Log("[GameManager] 보스 스폰!");
+        Vector3 spawnPos = player.transform.position + (Vector3)offset;
+        spawnPos.x = Mathf.Clamp(spawnPos.x, -mapBound, mapBound);
+        spawnPos.y = Mathf.Clamp(spawnPos.y, -mapBound, mapBound);
+        Instantiate(bossPrefabs[bossIndex], spawnPos, Quaternion.identity);
+        Debug.Log($"[GameManager] 보스 {bossIndex + 1} 스폰!");
     }
 
     public void OnPlayerDied()
@@ -49,6 +69,13 @@ public class GameManager : MonoBehaviour
         CurrentState = State.GameOver;
         Time.timeScale = 0f;
         GameUI.Instance?.ShowGameOver();
+    }
+
+    public void OnGameClear()
+    {
+        CurrentState = State.GameOver;
+        Time.timeScale = 0f;
+        GameUI.Instance?.ShowGameClear();
     }
 
     public void Restart()

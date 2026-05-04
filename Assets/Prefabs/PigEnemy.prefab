@@ -117,6 +117,7 @@ MonoBehaviour:
   - {fileID: 21300000, guid: 4969faa0370e09e4dbfd4f9f276f5fdc, type: 3}
   - {fileID: 21300000, guid: 9e6e37c7ac9767746bcacf37e6ce43fa, type: 3}
   animFrameRate: 6
+  pushVelocity: {x: 0, y: 0}
 --- !u!1 &7236853686949904669
 GameObject:
   m_ObjectHideFlags: 0

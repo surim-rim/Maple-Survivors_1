@@ -3,8 +3,9 @@ using UnityEngine;
 public class AutoAttack : MonoBehaviour
 {
     public GameObject projectilePrefab;
-    public float attackInterval = 0.8f;
-    public float attackRange = 10f;
+    public float attackInterval   = 0.8f;
+    public float attackRange      = 10f;
+    public int   extraAttackCount = 0;
 
     private float timer;
 
@@ -41,8 +42,16 @@ public class AutoAttack : MonoBehaviour
     void Fire(Transform target)
     {
         if (projectilePrefab == null) return;
-        Vector2 dir = (target.position - transform.position).normalized;
-        var proj = Instantiate(projectilePrefab, transform.position, Quaternion.identity);
-        proj.GetComponent<Projectile>()?.Init(dir);
+        Vector2 baseDir   = (target.position - transform.position).normalized;
+        int     total     = 1 + extraAttackCount;
+        float   spread    = 15f;
+        float   startAngle = -(total - 1) * spread / 2f;
+
+        for (int i = 0; i < total; i++)
+        {
+            Vector2 dir = Quaternion.Euler(0f, 0f, startAngle + i * spread) * baseDir;
+            var proj = Instantiate(projectilePrefab, transform.position, Quaternion.identity);
+            proj.GetComponent<Projectile>()?.Init(dir);
+        }
     }
 }

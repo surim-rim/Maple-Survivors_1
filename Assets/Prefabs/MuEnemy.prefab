@@ -201,3 +201,4 @@ MonoBehaviour:
   - {fileID: 21300000, guid: 5eed540321d3ae3458fd8134e88abf7e, type: 3}
   - {fileID: 21300000, guid: 3849f1e3ba55a3a48b5c9c2e6c5f72e3, type: 3}
   animFrameRate: 6
+  pushVelocity: {x: 0, y: 0}

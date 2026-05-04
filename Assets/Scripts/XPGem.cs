@@ -2,7 +2,7 @@ using UnityEngine;
 
 public class XPGem : MonoBehaviour
 {
-    public int xpValue = 3;
+    public int xpValue = 50;
     public float attractSpeed = 8f;
 
     private Transform player;
@@ -28,6 +28,8 @@ public class XPGem : MonoBehaviour
         if (attracting)
             rb.MovePosition(Vector2.MoveTowards(rb.position, player.position, attractSpeed * Time.fixedDeltaTime));
     }
+
+    public void AttractNow() => attracting = true;
 
     void OnTriggerEnter2D(Collider2D other)
     {
