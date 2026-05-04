@@ -161,5 +161,5 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 73f4aa198bedfd1489a8bc7f203c14a1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  xpValue: 10
+  xpValue: 50
   attractSpeed: 8

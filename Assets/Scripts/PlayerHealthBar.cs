@@ -19,6 +19,7 @@ public class PlayerHealthBar : MonoBehaviour
     void OnGUI()
     {
         if (pc == null || mainCam == null) return;
+        if (Time.timeScale == 0f) return; // 업그레이드 창·일시정지 중에는 숨김
 
         float ratio = pc.maxHP > 0 ? Mathf.Clamp01((float)pc.CurrentHP / pc.maxHP) : 0f;
 

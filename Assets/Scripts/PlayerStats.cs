@@ -27,7 +27,7 @@ public class PlayerStats : MonoBehaviour
     public void AddXP(int amount)
     {
         currentXP += Mathf.RoundToInt(amount * xpMultiplier);
-        if (currentXP >= xpToNextLevel)
+        while (currentXP >= xpToNextLevel)
         {
             currentXP -= xpToNextLevel;
             xpToNextLevel = Mathf.RoundToInt(xpToNextLevel * 1.3f);

@@ -71,6 +71,8 @@ public class GameUI : MonoBehaviour
 
         DrawXPBar(ps);
         DrawStats(ps);
+        DrawWeaponSlots();
+        DrawStatSlots();
         if (reviveMessageTimer > 0f) DrawReviveMessage();
         if (showingUpgrades) DrawUpgradePanel();
     }
@@ -101,6 +103,16 @@ public class GameUI : MonoBehaviour
         float barX  = (Screen.width - barW) / 2f;
         float barY  = Screen.height - 36f;
 
+        // 레벨 표시 — XP바 왼쪽
+        var lvStyle = new GUIStyle(GUI.skin.label)
+        {
+            fontSize  = 14,
+            fontStyle = FontStyle.Bold,
+            alignment = TextAnchor.MiddleRight
+        };
+        GUI.color = new Color(1f, 0.9f, 0.2f, 1f);
+        GUI.Label(new Rect(barX - 64f, barY, 60f, barH), $"Lv.{ps.level}", lvStyle);
+
         GUI.color = new Color(0.2f, 0.2f, 0.2f, 0.8f);
         GUI.DrawTexture(new Rect(barX, barY, barW, barH), Texture2D.whiteTexture);
 
@@ -116,12 +128,19 @@ public class GameUI : MonoBehaviour
         int elapsed = Mathf.FloorToInt(GameManager.Instance?.ElapsedTime ?? 0f);
         int min = elapsed / 60, sec = elapsed % 60;
 
+        var boldStyle   = new GUIStyle(GUI.skin.label) { fontSize = 14, fontStyle = FontStyle.Bold };
+        var centerStyle = new GUIStyle(boldStyle) { alignment = TextAnchor.MiddleCenter };
+        var rightStyle  = new GUIStyle(boldStyle) { alignment = TextAnchor.MiddleRight };
+
+        // 생존 시간 — 최상단 중앙
         GUI.color = Color.white;
-        GUI.Label(new Rect(10, 10, 160, 25), $"Lv. {ps.level}");
-        GUI.Label(new Rect(10, 30, 160, 25), $"처치: {ps.killCount}");
-        GUI.Label(new Rect(10, 50, 160, 25), $"시간: {min:00}:{sec:00}");
+        GUI.Label(new Rect(Screen.width / 2f - 80f, 8f, 160f, 26f), $"{min:00}:{sec:00}", centerStyle);
+
+        // 처치 / 골드 — 최상단 우측
+        GUI.color = Color.white;
+        GUI.Label(new Rect(Screen.width - 170f, 8f,  160f, 26f), $"처치: {ps.killCount}", rightStyle);
         GUI.color = new Color(1f, 0.85f, 0.1f, 1f);
-        GUI.Label(new Rect(10, 70, 160, 25), $"골드: {ps.gold}");
+        GUI.Label(new Rect(Screen.width - 170f, 30f, 160f, 26f), $"골드: {ps.gold}",     rightStyle);
         GUI.color = Color.white;
     }
 
@@ -154,6 +173,135 @@ public class GameUI : MonoBehaviour
         GUI.color = new Color(0.3f, 0.65f, 0.3f, 1f);
         if (GUI.Button(new Rect(px + pw / 2f - 90f, py + ph - 68f, 180f, 44f), "다시 시작"))
             GameManager.Instance?.Restart();
+
+        GUI.color = Color.white;
+    }
+
+    void DrawWeaponSlots()
+    {
+        var sa = FindObjectOfType<SwordAttack>();
+        var io = FindObjectOfType<IceOrbAttack>();
+        var ta = FindObjectOfType<ThrowingStarAttack>();
+        var ca = FindObjectOfType<CannonAttack>();
+        var ba = FindObjectOfType<BowAttack>();
+
+        bool[] owned  = { sa != null && sa.enabled, io != null && io.enabled, ta != null && ta.enabled, ca != null && ca.enabled, ba != null && ba.enabled };
+        int[]  levels = { sa != null ? sa.weaponLevel : 1, io != null ? io.weaponLevel : 1, ta != null ? ta.weaponLevel : 1, ca != null ? ca.weaponLevel : 1, ba != null ? ba.weaponLevel : 1 };
+        int[]  icons  = { 5, 6, 7, 8, 9 };
+
+        float boxSize = 48f;
+        float gap     = 5f;
+        float startX  = 10f;
+        float startY  = 10f;
+
+        var lvStyle = new GUIStyle(GUI.skin.label)
+        {
+            fontSize  = 10,
+            fontStyle = FontStyle.Bold,
+            alignment = TextAnchor.LowerRight
+        };
+
+        for (int i = 0; i < 5; i++)
+        {
+            float bx = startX + i * (boxSize + gap);
+            float by = startY;
+
+            // 배경
+            GUI.color = owned[i]
+                ? new Color(0.15f, 0.25f, 0.45f, 0.92f)
+                : new Color(0.10f, 0.10f, 0.13f, 0.85f);
+            GUI.DrawTexture(new Rect(bx, by, boxSize, boxSize), Texture2D.whiteTexture);
+
+            // 테두리
+            float bw = 1.5f;
+            GUI.color = owned[i]
+                ? new Color(0.45f, 0.75f, 1f, 0.9f)
+                : new Color(0.28f, 0.28f, 0.32f, 0.8f);
+            GUI.DrawTexture(new Rect(bx,                 by,                 boxSize, bw),      Texture2D.whiteTexture);
+            GUI.DrawTexture(new Rect(bx,                 by + boxSize - bw,  boxSize, bw),      Texture2D.whiteTexture);
+            GUI.DrawTexture(new Rect(bx,                 by,                 bw,      boxSize), Texture2D.whiteTexture);
+            GUI.DrawTexture(new Rect(bx + boxSize - bw,  by,                 bw,      boxSize), Texture2D.whiteTexture);
+
+            // 무기 아이콘
+            Sprite icon = (upgradeIcons != null && icons[i] < upgradeIcons.Length) ? upgradeIcons[icons[i]] : null;
+            if (icon != null)
+            {
+                float pad  = 6f;
+                float imgS = boxSize - pad * 2f;
+                GUI.color = owned[i] ? Color.white : new Color(0.3f, 0.3f, 0.3f, 0.5f);
+                GUI.DrawTexture(new Rect(bx + pad, by + pad, imgS, imgS), icon.texture, ScaleMode.ScaleToFit, true);
+            }
+
+            // 레벨 뱃지 (보유 시)
+            if (owned[i])
+            {
+                GUI.color = new Color(1f, 0.95f, 0.35f, 1f);
+                GUI.Label(new Rect(bx + 1f, by + 1f, boxSize - 3f, boxSize - 3f), $"Lv.{levels[i]}", lvStyle);
+            }
+        }
+
+        GUI.color = Color.white;
+    }
+
+    void DrawStatSlots()
+    {
+        var um = UpgradeManager.Instance;
+        if (um == null) return;
+
+        float boxSize = 48f;
+        float gap     = 5f;
+        float startX  = 10f;
+        float startY  = 68f; // 무기 슬롯(y=10, h=48) + 여백 10
+
+        var lvStyle = new GUIStyle(GUI.skin.label)
+        {
+            fontSize  = 10,
+            fontStyle = FontStyle.Bold,
+            alignment = TextAnchor.LowerRight
+        };
+
+        for (int i = 0; i < 5; i++)
+        {
+            float bx = startX + i * (boxSize + gap);
+            float by = startY;
+
+            bool owned  = i < um.ownedStatIds.Count;
+            int  statId = owned ? um.ownedStatIds[i] : -1;
+            int  level  = (owned && um.statLevels.ContainsKey(statId)) ? um.statLevels[statId] : 0;
+
+            // 배경
+            GUI.color = owned
+                ? new Color(0.25f, 0.15f, 0.42f, 0.92f)
+                : new Color(0.10f, 0.10f, 0.13f, 0.85f);
+            GUI.DrawTexture(new Rect(bx, by, boxSize, boxSize), Texture2D.whiteTexture);
+
+            // 테두리
+            float bw = 1.5f;
+            GUI.color = owned
+                ? new Color(0.75f, 0.45f, 1f, 0.9f)
+                : new Color(0.28f, 0.28f, 0.32f, 0.8f);
+            GUI.DrawTexture(new Rect(bx,                 by,                 boxSize, bw),      Texture2D.whiteTexture);
+            GUI.DrawTexture(new Rect(bx,                 by + boxSize - bw,  boxSize, bw),      Texture2D.whiteTexture);
+            GUI.DrawTexture(new Rect(bx,                 by,                 bw,      boxSize), Texture2D.whiteTexture);
+            GUI.DrawTexture(new Rect(bx + boxSize - bw,  by,                 bw,      boxSize), Texture2D.whiteTexture);
+
+            if (owned)
+            {
+                // 아이콘 (upgradeIcons 배열의 statId 인덱스 직접 사용)
+                Sprite icon = (upgradeIcons != null && statId < upgradeIcons.Length) ? upgradeIcons[statId] : null;
+                if (icon != null)
+                {
+                    float pad  = 6f;
+                    float imgS = boxSize - pad * 2f;
+                    GUI.color = Color.white;
+                    GUI.DrawTexture(new Rect(bx + pad, by + pad, imgS, imgS), icon.texture, ScaleMode.ScaleToFit, true);
+                }
+
+                // 레벨 뱃지
+                GUI.color = new Color(0.95f, 0.75f, 1f, 1f);
+                GUI.Label(new Rect(bx + 1f, by + 1f, boxSize - 3f, boxSize - 3f), $"Lv.{level}", lvStyle);
+            }
+        }
 
         GUI.color = Color.white;
     }
@@ -217,8 +365,9 @@ public class GameUI : MonoBehaviour
             GUI.color = Color.white;
             GUI.Label(new Rect(cx + 10f, cardY + 10f, cardW - 20f, 26f), $"<b><size=14>{opt.name}</size></b>");
 
-            // 아이콘 이미지
-            Sprite icon = (upgradeIcons != null && opt.id < upgradeIcons.Length) ? upgradeIcons[opt.id] : null;
+            // 아이콘 이미지 (id 20~24: 무기 획득 → 동일 무기 아이콘 재사용, 20→5, 21→6, ...)
+            int iconIdx = opt.id >= 20 ? opt.id - 15 : opt.id;
+            Sprite icon = (upgradeIcons != null && iconIdx < upgradeIcons.Length) ? upgradeIcons[iconIdx] : null;
             if (icon != null)
             {
                 float imgSize = 64f;

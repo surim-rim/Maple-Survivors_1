@@ -40,11 +40,13 @@ public class ThrowingStarAttack : MonoBehaviour
     IEnumerator BurstFire(Transform target)
     {
         int dmg = PlayerStats.Instance != null ? PlayerStats.Instance.damage : 15;
+        // 첫 발 기준으로 방향을 고정 — 도중 타겟이 사라져도 방향 유지
+        Vector2 dir = target != null
+            ? ((Vector2)target.position - (Vector2)transform.position).normalized
+            : Vector2.right;
+
         for (int i = 0; i < burstCount; i++)
         {
-            Vector2 dir = target != null
-                ? ((Vector2)target.position - (Vector2)transform.position).normalized
-                : Vector2.right;
             SpawnStar(dir, dmg);
             yield return new WaitForSeconds(burstDelay);
         }

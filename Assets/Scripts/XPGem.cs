@@ -2,7 +2,7 @@ using UnityEngine;
 
 public class XPGem : MonoBehaviour
 {
-    public int xpValue = 10;
+    public int xpValue = 50;
     public float attractSpeed = 8f;
 
     private Transform player;

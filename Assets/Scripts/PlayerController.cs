@@ -17,7 +17,7 @@ public class PlayerController : MonoBehaviour
 
     public int  CurrentHP { get; private set; }
     [HideInInspector] public bool hasRevive = false;
-    private bool reviveConsumed = false;
+    [HideInInspector] public bool reviveConsumed = false;
 
     private Vector2 lastFacingDir = Vector2.right;
     public Vector2 FacingDir => lastFacingDir;

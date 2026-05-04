@@ -26,7 +26,12 @@ public class UpgradeManager : MonoBehaviour
         new UpgradeOption { id = 14, name = "경험치 획득 UP", description = "경험치 획득량 +10%" },
     };
 
-    private bool reviveUsed = false;
+    private bool reviveUsed     = false;
+    private int  pendingLevelUps = 0;
+
+    // 보조 능력치 슬롯 추적 (최대 5종)
+    public List<int>         ownedStatIds = new List<int>();
+    public Dictionary<int, int> statLevels  = new Dictionary<int, int>();
 
     void Awake() => Instance = this;
 
@@ -44,21 +49,27 @@ public class UpgradeManager : MonoBehaviour
 
     void OnLevelUp()
     {
-        Time.timeScale = 0f;
-        GameUI.Instance?.ShowUpgradePanel(PickRandom(3));
+        pendingLevelUps++;
+        if (pendingLevelUps == 1)
+        {
+            Time.timeScale = 0f;
+            GameUI.Instance?.ShowUpgradePanel(PickRandom(3));
+        }
+        // pendingLevelUps > 1이면 현재 창 닫힐 때 순서대로 표시
     }
 
     List<UpgradeOption> PickRandom(int count)
     {
-        var pool = new List<UpgradeOption>(AllUpgrades);
+        // 보조 능력치: 이미 보유한 종류는 항상 포함, 신규는 슬롯(5개) 여유 있을 때만
+        var pool = new List<UpgradeOption>();
+        foreach (var opt in AllUpgrades)
+        {
+            if (opt.id == 13 && reviveUsed) continue;
+            if (ownedStatIds.Contains(opt.id) || ownedStatIds.Count < 5)
+                pool.Add(opt);
+        }
 
-        // 부활은 이미 선택한 경우 풀에서 제거
-        if (reviveUsed)
-            pool.RemoveAll(o => o.id == 13);
-
-        var weaponOpt = GetWeaponUpgradeOption();
-        if (weaponOpt != null)
-            pool.Add(weaponOpt);
+        pool.AddRange(GetAllWeaponOptions());
 
         var result = new List<UpgradeOption>();
         while (result.Count < count && pool.Count > 0)
@@ -70,49 +81,72 @@ public class UpgradeManager : MonoBehaviour
         return result;
     }
 
-    UpgradeOption GetWeaponUpgradeOption()
+    List<UpgradeOption> GetAllWeaponOptions()
     {
-        int charId = CharacterSelectUI.ActiveCharacterId;
-        switch (charId)
+        var options = new List<UpgradeOption>();
+
+        var sa = FindObjectOfType<SwordAttack>();
+        var io = FindObjectOfType<IceOrbAttack>();
+        var ta = FindObjectOfType<ThrowingStarAttack>();
+        var ca = FindObjectOfType<CannonAttack>();
+        var ba = FindObjectOfType<BowAttack>();
+
+        if (sa != null)
         {
-            case 2:
+            if (!sa.enabled)
+                options.Add(new UpgradeOption { id = 20, name = "검 획득", description = "히어로의 검 획득. 근접 광역 참격!" });
+            else if (sa.weaponLevel < 5)
             {
-                var sa = FindObjectOfType<SwordAttack>();
-                if (sa == null || sa.weaponLevel >= 5) return null;
                 string[] effects = { "데미지 +15", "공격 범위 +1.5", "공격속도 20% 증가", "데미지 +25 [최대]" };
-                return new UpgradeOption { id = 5, name = $"검 강화 Lv.{sa.weaponLevel + 1}", description = effects[sa.weaponLevel - 1] };
+                options.Add(new UpgradeOption { id = 5, name = $"검 강화 Lv.{sa.weaponLevel + 1}", description = effects[sa.weaponLevel - 1] });
             }
-            case 3:
-            {
-                var io = FindObjectOfType<IceOrbAttack>();
-                if (io == null || io.weaponLevel >= 5) return null;
-                string[] effects = { "발사 주기 -0.4초", "도트 데미지 x2", "동시 2발 발사", "동시 3발 발사 [최대]" };
-                return new UpgradeOption { id = 6, name = $"오브 강화 Lv.{io.weaponLevel + 1}", description = effects[io.weaponLevel - 1] };
-            }
-            case 4:
-            {
-                var ts = FindObjectOfType<ThrowingStarAttack>();
-                if (ts == null || ts.weaponLevel >= 5) return null;
-                string[] effects = { "연속 3발로 증가", "연속 4발로 증가", "연속 5발로 증가", "연속 7발 [최대]" };
-                return new UpgradeOption { id = 7, name = $"표창 강화 Lv.{ts.weaponLevel + 1}", description = effects[ts.weaponLevel - 1] };
-            }
-            case 5:
-            {
-                var ca = FindObjectOfType<CannonAttack>();
-                if (ca == null || ca.weaponLevel >= 5) return null;
-                string[] effects = { "폭발 범위 +1", "화염 지속 +2초", "발사 주기 -0.6초", "폭발 데미지 x1.5 [최대]" };
-                return new UpgradeOption { id = 8, name = $"대포 강화 Lv.{ca.weaponLevel + 1}", description = effects[ca.weaponLevel - 1] };
-            }
-            case 6:
-            {
-                var ba = FindObjectOfType<BowAttack>();
-                if (ba == null || ba.weaponLevel >= 5) return null;
-                string[] effects = { "화살 2발 동시 발사", "화살 3발 동시 발사", "화살 4발 동시 발사", "화살 5발 동시 발사 [최대]" };
-                return new UpgradeOption { id = 9, name = $"활 강화 Lv.{ba.weaponLevel + 1}", description = effects[ba.weaponLevel - 1] };
-            }
-            default:
-                return null;
         }
+
+        if (io != null)
+        {
+            if (!io.enabled)
+                options.Add(new UpgradeOption { id = 21, name = "아이스 오브 획득", description = "썬콜의 얼음 오브 획득. 냉기 도트 데미지!" });
+            else if (io.weaponLevel < 5)
+            {
+                string[] effects = { "발사 주기 -0.4초", "도트 데미지 x2", "동시 2발 발사", "동시 3발 발사 [최대]" };
+                options.Add(new UpgradeOption { id = 6, name = $"오브 강화 Lv.{io.weaponLevel + 1}", description = effects[io.weaponLevel - 1] });
+            }
+        }
+
+        if (ta != null)
+        {
+            if (!ta.enabled)
+                options.Add(new UpgradeOption { id = 22, name = "표창 획득", description = "나이트로드의 표창 획득. 연속 투척!" });
+            else if (ta.weaponLevel < 5)
+            {
+                string[] effects = { "연속 3발로 증가", "연속 4발로 증가", "연속 5발로 증가", "연속 7발 [최대]" };
+                options.Add(new UpgradeOption { id = 7, name = $"표창 강화 Lv.{ta.weaponLevel + 1}", description = effects[ta.weaponLevel - 1] });
+            }
+        }
+
+        if (ca != null)
+        {
+            if (!ca.enabled)
+                options.Add(new UpgradeOption { id = 23, name = "대포 획득", description = "캐논슈터의 대포 획득. 폭발 + 화염 지대!" });
+            else if (ca.weaponLevel < 5)
+            {
+                string[] effects = { "폭발 범위 +1", "화염 지속 +2초", "발사 주기 -0.6초", "폭발 데미지 x1.5 [최대]" };
+                options.Add(new UpgradeOption { id = 8, name = $"대포 강화 Lv.{ca.weaponLevel + 1}", description = effects[ca.weaponLevel - 1] });
+            }
+        }
+
+        if (ba != null)
+        {
+            if (!ba.enabled)
+                options.Add(new UpgradeOption { id = 24, name = "활 획득", description = "보우마스터의 활 획득. 관통 화살!" });
+            else if (ba.weaponLevel < 5)
+            {
+                string[] effects = { "화살 2발 동시 발사", "화살 3발 동시 발사", "화살 4발 동시 발사", "화살 5발 동시 발사 [최대]" };
+                options.Add(new UpgradeOption { id = 9, name = $"활 강화 Lv.{ba.weaponLevel + 1}", description = effects[ba.weaponLevel - 1] });
+            }
+        }
+
+        return options;
     }
 
     public void ApplyUpgrade(int id)
@@ -225,9 +259,41 @@ public class UpgradeManager : MonoBehaviour
                 if (ba == null) break;
                 ba.weaponLevel++;
                 break;
+
+            case 20: // 검 획득
+                if (sa != null) { sa.enabled = true; if (ps != null) sa.attackInterval = ps.attackInterval; }
+                break;
+            case 21: // 아이스 오브 획득
+                if (io != null) io.enabled = true;
+                break;
+            case 22: // 표창 획득
+                if (ta != null) { ta.enabled = true; if (ps != null) ta.attackInterval = ps.attackInterval; }
+                break;
+            case 23: // 대포 획득
+                if (ca != null) { ca.enabled = true; if (ps != null) ca.attackInterval = Mathf.Max(0.5f, ps.attackInterval * 2f); }
+                break;
+            case 24: // 활 획득
+                if (ba != null) { ba.enabled = true; if (ps != null) ba.attackInterval = ps.attackInterval; }
+                break;
         }
 
-        Time.timeScale = 1f;
-        GameUI.Instance?.HideUpgradePanel();
+        // 보조 능력치 슬롯 추적 (AllUpgrades 에 있는 id만)
+        if (AllUpgrades.Exists(o => o.id == id))
+        {
+            if (!ownedStatIds.Contains(id)) ownedStatIds.Add(id);
+            statLevels[id] = statLevels.ContainsKey(id) ? statLevels[id] + 1 : 1;
+        }
+
+        pendingLevelUps = Mathf.Max(0, pendingLevelUps - 1);
+        if (pendingLevelUps > 0)
+        {
+            // 남은 레벨업 창 순서대로 표시 (timeScale은 0 유지)
+            GameUI.Instance?.ShowUpgradePanel(PickRandom(3));
+        }
+        else
+        {
+            Time.timeScale = 1f;
+            GameUI.Instance?.HideUpgradePanel();
+        }
     }
 }
