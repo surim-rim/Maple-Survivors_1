@@ -113,7 +113,7 @@ MonoBehaviour:
   maxHP: 1200
   contactDamage: 40
   xpDropCount: 25
-  xpGemPrefab: {fileID: 7821362943602631224, guid: 783ba4b7426b1b4478ce2e016cb12361, type: 3}
+  xpGemPrefab: {fileID: 8338270208449672137, guid: d944235544d669d44ad2b89333d816c6, type: 3}
   sprites:
   - {fileID: 21300000, guid: 6287c8e402fbeac4a99d05798e3f5f65, type: 3}
   - {fileID: 21300000, guid: 473b3f22d4ba3e744bdff7878ff26a3d, type: 3}

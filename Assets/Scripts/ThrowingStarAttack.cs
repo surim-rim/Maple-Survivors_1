@@ -8,10 +8,12 @@ public class ThrowingStarAttack : MonoBehaviour
     public float  burstDelay      = 0.12f;
     public float  projectileSpeed = 16f;
     public Sprite starSprite;
-    public int    weaponLevel     = 1;
-    public float  starScale       = 0.2f;
+    public int    weaponLevel      = 1;
+    public float  starScale        = 0.2f;
+    public int    extraAttackCount = 0;
 
-    private float timer;
+    private float    timer;
+    private Coroutine burstCoroutine;
 
     void Update()
     {
@@ -21,7 +23,10 @@ public class ThrowingStarAttack : MonoBehaviour
             timer = 0f;
             var target = FindNearestEnemy();
             if (target != null)
-                StartCoroutine(BurstFire(target));
+            {
+                if (burstCoroutine != null) StopCoroutine(burstCoroutine);
+                burstCoroutine = StartCoroutine(BurstFire(target));
+            }
         }
     }
 
@@ -45,7 +50,8 @@ public class ThrowingStarAttack : MonoBehaviour
             ? ((Vector2)target.position - (Vector2)transform.position).normalized
             : Vector2.right;
 
-        for (int i = 0; i < burstCount; i++)
+        int total = burstCount + extraAttackCount;
+        for (int i = 0; i < total; i++)
         {
             SpawnStar(dir, dmg);
             yield return new WaitForSeconds(burstDelay);

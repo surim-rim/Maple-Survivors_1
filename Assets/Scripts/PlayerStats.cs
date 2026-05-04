@@ -30,7 +30,7 @@ public class PlayerStats : MonoBehaviour
         while (currentXP >= xpToNextLevel)
         {
             currentXP -= xpToNextLevel;
-            xpToNextLevel = Mathf.RoundToInt(xpToNextLevel * 1.3f);
+            xpToNextLevel = Mathf.RoundToInt(xpToNextLevel * 1.2f);
             level++;
             OnLevelUp?.Invoke();
         }

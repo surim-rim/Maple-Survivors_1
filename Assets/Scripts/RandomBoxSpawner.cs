@@ -4,9 +4,10 @@ public class RandomBoxSpawner : MonoBehaviour
 {
     public GameObject boxPrefab;
     public float spawnInterval = 20f;
-    public float minDist = 8f;
-    public float maxDist = 14f;
+    public float minDist  = 8f;
+    public float maxDist  = 14f;
     public int   maxBoxes = 5;
+    public float mapBound = 74f;
 
     private float     timer;
     private Transform player;
@@ -30,9 +31,12 @@ public class RandomBoxSpawner : MonoBehaviour
 
     void SpawnBox()
     {
-        float   angle  = Random.Range(0f, 360f) * Mathf.Deg2Rad;
-        float   dist   = Random.Range(minDist, maxDist);
-        Vector2 offset = new Vector2(Mathf.Cos(angle), Mathf.Sin(angle)) * dist;
-        Instantiate(boxPrefab, player.position + (Vector3)offset, Quaternion.identity);
+        float   angle    = Random.Range(0f, 360f) * Mathf.Deg2Rad;
+        float   dist     = Random.Range(minDist, maxDist);
+        Vector2 offset   = new Vector2(Mathf.Cos(angle), Mathf.Sin(angle)) * dist;
+        Vector3 spawnPos = player.position + (Vector3)offset;
+        spawnPos.x = Mathf.Clamp(spawnPos.x, -mapBound, mapBound);
+        spawnPos.y = Mathf.Clamp(spawnPos.y, -mapBound, mapBound);
+        Instantiate(boxPrefab, spawnPos, Quaternion.identity);
     }
 }

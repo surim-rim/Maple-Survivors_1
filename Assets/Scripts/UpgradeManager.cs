@@ -24,6 +24,7 @@ public class UpgradeManager : MonoBehaviour
         new UpgradeOption { id = 12, name = "공격 범위 UP",   description = "모든 공격 범위 및 이펙트 증가" },
         new UpgradeOption { id = 13, name = "부활",           description = "사망 시 1회 부활 (게임당 1회)" },
         new UpgradeOption { id = 14, name = "경험치 획득 UP", description = "경험치 획득량 +10%" },
+        new UpgradeOption { id = 15, name = "공격 횟수 UP",   description = "모든 무기 공격 횟수 +1 (최대 3회)" },
     };
 
     private bool reviveUsed     = false;
@@ -65,6 +66,7 @@ public class UpgradeManager : MonoBehaviour
         foreach (var opt in AllUpgrades)
         {
             if (opt.id == 13 && reviveUsed) continue;
+            if (opt.id == 15 && statLevels.ContainsKey(15) && statLevels[15] >= 3) continue;
             if (ownedStatIds.Contains(opt.id) || ownedStatIds.Count < 5)
                 pool.Add(opt);
         }
@@ -196,6 +198,20 @@ public class UpgradeManager : MonoBehaviour
                 break;
             case 14: // 경험치 획득 UP
                 if (ps != null) ps.xpMultiplier += 0.1f;
+                break;
+            case 15: // 공격 횟수 UP
+                var aa15 = FindObjectOfType<AutoAttack>();
+                var sa15 = FindObjectOfType<SwordAttack>();
+                var io15 = FindObjectOfType<IceOrbAttack>();
+                var ta15 = FindObjectOfType<ThrowingStarAttack>();
+                var ba15 = FindObjectOfType<BowAttack>();
+                var ca15 = FindObjectOfType<CannonAttack>();
+                if (aa15 != null) aa15.extraAttackCount++;
+                if (sa15 != null) sa15.extraAttackCount++;
+                if (io15 != null) io15.extraAttackCount++;
+                if (ta15 != null) ta15.extraAttackCount++;
+                if (ba15 != null) ba15.extraAttackCount++;
+                if (ca15 != null) ca15.extraAttackCount++;
                 break;
 
             case 12: // 공격 범위

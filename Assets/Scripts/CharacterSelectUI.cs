@@ -18,7 +18,8 @@ public class CharacterSelectUI : MonoBehaviour
     public Sprite[]           characterSprites = new Sprite[6];
     public CharSpriteSet[]    charSpriteSets   = new CharSpriteSet[6];
 
-    public static int ActiveCharacterId = 0;
+    public static int  ActiveCharacterId  = 0;
+    public static bool SelectionComplete  = false; // 씬 재시작 시 Awake에서 리셋
 
     private bool selected;
     private bool showingTitle = true;
@@ -41,7 +42,7 @@ public class CharacterSelectUI : MonoBehaviour
     };
     private static readonly bool[] CharUnlocked = { true, true, true, true, true, true };
 
-    void Awake() => Time.timeScale = 0f;
+    void Awake() { SelectionComplete = false; Time.timeScale = 0f; }
 
     void Update()
     {
@@ -360,6 +361,7 @@ public class CharacterSelectUI : MonoBehaviour
         }
 
         ActiveCharacterId = id;
+        SelectionComplete = true;
         selected = true;
         Time.timeScale = 1f;
         Destroy(gameObject);

@@ -12,6 +12,7 @@ public class IceOrbAttack : MonoBehaviour
     public int    orbCount         = 1;
     public float  damageMultiplier = 1f;
     public float  orbScale         = 0.35f;
+    public int    extraAttackCount = 0;
 
     private float timer;
 
@@ -36,10 +37,11 @@ public class IceOrbAttack : MonoBehaviour
             ? Mathf.Max(1, (int)(PlayerStats.Instance.damage / 2f * damageMultiplier))
             : 5;
 
-        float spreadAngle = orbCount > 1 ? 20f : 0f;
-        float startAngle  = -(orbCount - 1) * spreadAngle / 2f;
+        int   total       = orbCount + extraAttackCount;
+        float spreadAngle = total > 1 ? 20f : 0f;
+        float startAngle  = -(total - 1) * spreadAngle / 2f;
 
-        for (int i = 0; i < orbCount; i++)
+        for (int i = 0; i < total; i++)
         {
             float   angle = startAngle + i * spreadAngle;
             Vector2 dir   = Quaternion.Euler(0f, 0f, angle) * baseDir;

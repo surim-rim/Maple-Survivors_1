@@ -1,4 +1,5 @@
 using UnityEngine;
+using System.Collections;
 
 public class SwordAttack : MonoBehaviour
 {
@@ -7,8 +8,9 @@ public class SwordAttack : MonoBehaviour
     public int    damage            = 20;
     public int    weaponLevel       = 1;
     public int    weaponDamageBonus = 0;
-    public float  effectOffset   = 1.3f;
+    public float  effectOffset      = 1.3f;
     public Sprite slashSprite;
+    public int    extraAttackCount  = 0;
 
     // 공격 판정 각도 (양쪽 합산 120°)
     private const float HalfAngle = 75f;
@@ -30,7 +32,17 @@ public class SwordAttack : MonoBehaviour
         if (timer >= attackInterval)
         {
             timer = 0f;
+            StartCoroutine(MultiSlash());
+        }
+    }
+
+    IEnumerator MultiSlash()
+    {
+        int total = 1 + extraAttackCount;
+        for (int i = 0; i < total; i++)
+        {
             PerformSlash();
+            if (i < total - 1) yield return new WaitForSeconds(0.15f);
         }
     }
 

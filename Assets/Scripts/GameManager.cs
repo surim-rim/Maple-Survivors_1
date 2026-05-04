@@ -16,8 +16,11 @@ public class GameManager : MonoBehaviour
 
     [Header("Boss")]
     public GameObject[] bossPrefabs;
+    public float mapBound      = 74f;
     private int   bossIndex    = 0;
     private float nextBossTime = 180f;
+    private bool  lastBossSpawned   = false;
+    private float lastBossSpawnTime = 0f;
 
     void Awake() => Instance = this;
 
@@ -32,6 +35,17 @@ public class GameManager : MonoBehaviour
             SpawnBoss();
             bossIndex++;
             nextBossTime += 180f;
+            if (bossIndex >= bossPrefabs.Length)
+            {
+                lastBossSpawned   = true;
+                lastBossSpawnTime = ElapsedTime;
+            }
+        }
+
+        if (lastBossSpawned && ElapsedTime >= lastBossSpawnTime + 60f)
+        {
+            lastBossSpawned = false;
+            OnGameClear();
         }
     }
 
@@ -43,7 +57,10 @@ public class GameManager : MonoBehaviour
 
         float angle = Random.Range(0f, 360f) * Mathf.Deg2Rad;
         Vector2 offset = new Vector2(Mathf.Cos(angle), Mathf.Sin(angle)) * 15f;
-        Instantiate(bossPrefabs[bossIndex], player.transform.position + (Vector3)offset, Quaternion.identity);
+        Vector3 spawnPos = player.transform.position + (Vector3)offset;
+        spawnPos.x = Mathf.Clamp(spawnPos.x, -mapBound, mapBound);
+        spawnPos.y = Mathf.Clamp(spawnPos.y, -mapBound, mapBound);
+        Instantiate(bossPrefabs[bossIndex], spawnPos, Quaternion.identity);
         Debug.Log($"[GameManager] 보스 {bossIndex + 1} 스폰!");
     }
 
@@ -52,6 +69,13 @@ public class GameManager : MonoBehaviour
         CurrentState = State.GameOver;
         Time.timeScale = 0f;
         GameUI.Instance?.ShowGameOver();
+    }
+
+    public void OnGameClear()
+    {
+        CurrentState = State.GameOver;
+        Time.timeScale = 0f;
+        GameUI.Instance?.ShowGameClear();
     }
 
     public void Restart()

@@ -3,10 +3,11 @@ using UnityEngine;
 public class EnemySpawner : MonoBehaviour
 {
     public GameObject[] enemyPrefabs;
-    public float spawnRadius = 13f;
+    public float spawnRadius    = 13f;
     public float initialInterval = 1.5f;
-    public float minInterval = 0.3f;
-    public int maxEnemies = 150;
+    public float minInterval    = 0.3f;
+    public int   maxEnemies     = 150;
+    public float mapBound       = 74f;
 
     private float timer;
     private float currentInterval;
@@ -40,7 +41,10 @@ public class EnemySpawner : MonoBehaviour
     {
         float angle = Random.Range(0f, 360f) * Mathf.Deg2Rad;
         Vector2 offset = new Vector2(Mathf.Cos(angle), Mathf.Sin(angle)) * spawnRadius;
+        Vector3 spawnPos = player.position + (Vector3)offset;
+        spawnPos.x = Mathf.Clamp(spawnPos.x, -mapBound, mapBound);
+        spawnPos.y = Mathf.Clamp(spawnPos.y, -mapBound, mapBound);
         var prefab = enemyPrefabs[Random.Range(0, enemyPrefabs.Length)];
-        Instantiate(prefab, player.position + (Vector3)offset, Quaternion.identity);
+        Instantiate(prefab, spawnPos, Quaternion.identity);
     }
 }

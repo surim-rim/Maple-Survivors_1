@@ -29,17 +29,20 @@ public class SceneSetup
                                 : CreateCircleSprite("Projectile", new Color(1f, 1f, 0.2f), 32);
 
         // XP 젬 스프라이트 & 프리팹
-        Sprite     gemSprite = LoadPlayerSprites("XPG")[0];
-        GameObject gemPrefab = CreateXPGemPrefab(gemSprite);
+        Sprite     gemSprite     = LoadPlayerSprites("XPG")[0];
+        GameObject gemPrefab     = CreateXPGemPrefab(gemSprite, 50);
+        Sprite[]   bossGemSp     = LoadPlayerSprites("XPG2");
+        Sprite     bossGemSprite = bossGemSp.Length > 0 ? bossGemSp[0] : gemSprite;
+        GameObject bossGemPrefab = CreateXPGemPrefab(bossGemSprite, 500, "XPGemBoss");
 
         // 보스 프리팹 5종 (순서대로 스폰)
         GameObject[] bossPrefabs = new GameObject[]
         {
-            CreateBossPrefabWithSprites("MixGolem", LoadPlayerSprites("boss/mg1","boss/mg2"), gemPrefab, 0.5f, 500,  1.5f, 25, 10),
-            CreateBossPrefabWithSprites("Octopus",  LoadPlayerSprites("boss/op1","boss/op2"), gemPrefab, 0.5f, 700,  2.0f, 30, 15),
-            CreateBossPrefabWithSprites("FireBoar", LoadPlayerSprites("boss/fb1","boss/fb2"), gemPrefab, 0.5f, 900,  2.5f, 35, 20),
-            CreateBossPrefabWithSprites("Stumpy",   LoadPlayerSprites("boss/xt1","boss/xt2"), gemPrefab, 0.5f, 1200, 2.0f, 40, 25),
-            CreateBossPrefabWithSprites("JrBalrog", LoadPlayerSprites("boss/jb1","boss/jb2"), gemPrefab, 0.6f, 1500, 1.8f, 50, 30),
+            CreateBossPrefabWithSprites("MixGolem", LoadPlayerSprites("boss/mg1","boss/mg2"), bossGemPrefab, 0.5f, 500,  1.5f, 25, 10),
+            CreateBossPrefabWithSprites("Octopus",  LoadPlayerSprites("boss/op1","boss/op2"), bossGemPrefab, 0.5f, 700,  2.0f, 30, 15),
+            CreateBossPrefabWithSprites("FireBoar", LoadPlayerSprites("boss/fb1","boss/fb2"), bossGemPrefab, 0.5f, 900,  2.5f, 35, 20),
+            CreateBossPrefabWithSprites("Stumpy",   LoadPlayerSprites("boss/xt1","boss/xt2"), bossGemPrefab, 0.5f, 1200, 2.0f, 40, 25),
+            CreateBossPrefabWithSprites("JrBalrog", LoadPlayerSprites("boss/jb1","boss/jb2"), bossGemPrefab, 0.6f, 1500, 1.8f, 50, 30),
         };
 
         // 프리팹 생성
@@ -231,9 +234,9 @@ public class SceneSetup
     }
 
     // ── XP 젬 프리팹 ──────────────────────────────────────
-    static GameObject CreateXPGemPrefab(Sprite sprite)
+    static GameObject CreateXPGemPrefab(Sprite sprite, int xpValue = 50, string gemName = "XPGem")
     {
-        var obj = new GameObject("XPGem");
+        var obj = new GameObject(gemName);
         obj.transform.localScale = new Vector3(0.1f, 0.1f, 0.2f);
 
         var sr = obj.AddComponent<SpriteRenderer>();
@@ -248,9 +251,10 @@ public class SceneSetup
         col.isTrigger = true;
         col.radius    = 0.3f;
 
-        obj.AddComponent<XPGem>();
+        var gem = obj.AddComponent<XPGem>();
+        gem.xpValue = xpValue;
 
-        var prefab = PrefabUtility.SaveAsPrefabAsset(obj, "Assets/Prefabs/XPGem.prefab");
+        var prefab = PrefabUtility.SaveAsPrefabAsset(obj, $"Assets/Prefabs/{gemName}.prefab");
         Object.DestroyImmediate(obj);
         return prefab;
     }
@@ -370,7 +374,7 @@ public class SceneSetup
         var gameUI = new GameObject("GameUI").AddComponent<GameUI>();
 
         // 업그레이드 아이콘 (id 순: 0=공격속도, 1=공격력, 2=이동속도, 3=최대HP, 4=흡수범위)
-        gameUI.upgradeIcons = new Sprite[15];
+        gameUI.upgradeIcons = new Sprite[16];
         var ctSprites    = LoadPlayerSprites("status/Ct");     if (ctSprites.Length    > 0) gameUI.upgradeIcons[0]  = ctSprites[0];
         var dmgSprites   = LoadPlayerSprites("status/damage"); if (dmgSprites.Length   > 0) gameUI.upgradeIcons[1]  = dmgSprites[0];
         var spdSprites   = LoadPlayerSprites("status/speed");  if (spdSprites.Length   > 0) gameUI.upgradeIcons[2]  = spdSprites[0];
@@ -381,12 +385,18 @@ public class SceneSetup
         var sizeSprites  = LoadPlayerSprites("status/size");   if (sizeSprites.Length  > 0) gameUI.upgradeIcons[12] = sizeSprites[0];
         var rsSprites    = LoadPlayerSprites("status/rs");     if (rsSprites.Length    > 0) gameUI.upgradeIcons[13] = rsSprites[0];
         var axpSprites   = LoadPlayerSprites("status/axp");    if (axpSprites.Length   > 0) gameUI.upgradeIcons[14] = axpSprites[0];
+        var addSprites   = LoadPlayerSprites("status/add");    if (addSprites.Length   > 0) gameUI.upgradeIcons[15] = addSprites[0];
         // 무기 강화 아이콘 (id 5~9: 히어로, 썬콜, 나이트로드, 캐논슈터, 보우마스터)
         var swW2Sprites  = LoadPlayerSprites("Weapon/attack"); if (swW2Sprites.Length  > 0) gameUI.upgradeIcons[5] = swW2Sprites[0];
         var iceW2Sprites = LoadPlayerSprites("Weapon/ice_w");  if (iceW2Sprites.Length > 0) gameUI.upgradeIcons[6] = iceW2Sprites[0];
         var niW2Sprites  = LoadPlayerSprites("Weapon/ni_w");   if (niW2Sprites.Length  > 0) gameUI.upgradeIcons[7] = niW2Sprites[0];
         var caW2Sprites  = LoadPlayerSprites("Weapon/ca_w");   if (caW2Sprites.Length  > 0) gameUI.upgradeIcons[8] = caW2Sprites[0];
         var boW2Sprites  = LoadPlayerSprites("Weapon/boma_w"); if (boW2Sprites.Length  > 0) gameUI.upgradeIcons[9] = boW2Sprites[0];
+
+        // 인게임 HUD 아이콘
+        var killIconSp = LoadPlayerSprites("ui/kill"); if (killIconSp.Length > 0) gameUI.killIcon = killIconSp[0];
+        var timeIconSp = LoadPlayerSprites("ui/time"); if (timeIconSp.Length > 0) gameUI.timeIcon = timeIconSp[0];
+        var moIconSp   = LoadPlayerSprites("ui/mo");   if (moIconSp.Length   > 0) gameUI.moIcon   = moIconSp[0];
 
         // DamageTextManager
         var existingDT = GameObject.Find("DamageTextManager");
@@ -613,7 +623,7 @@ public class SceneSetup
         }
 
         cam.transform.position = new Vector3(0, 0, -10);
-        cam.orthographicSize = 6f;
+        cam.orthographicSize = 7f;
 
         var follow = cam.GetComponent<CameraFollow>();
         if (follow == null) follow = cam.gameObject.AddComponent<CameraFollow>();

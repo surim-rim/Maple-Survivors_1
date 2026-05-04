@@ -10,6 +10,7 @@ public class CannonAttack : MonoBehaviour
     public Sprite cannonballSprite;
     public int    weaponLevel      = 1;
     public float  damageMultiplier = 1f;
+    public int    extraAttackCount = 0;
 
     private float timer;
 
@@ -25,28 +26,31 @@ public class CannonAttack : MonoBehaviour
 
     void Fire()
     {
-        // 사정거리 내 랜덤 위치에 발사
-        Vector2 offset    = Random.insideUnitCircle.normalized * Random.Range(2.2f, attackRange);
-        Vector2 targetPos = (Vector2)transform.position + offset;
-
         int dmg    = PlayerStats.Instance != null ? (int)(PlayerStats.Instance.damage * 2 * damageMultiplier) : 40;
         int dotDmg = PlayerStats.Instance != null ? Mathf.Max(1, PlayerStats.Instance.damage / 2) : 10;
+        int total  = 1 + extraAttackCount;
 
-        var go = new GameObject("Cannonball");
-        go.transform.position   = transform.position;
-        go.transform.localScale = new Vector3(2.0f, 2.0f, 1f);
+        for (int s = 0; s < total; s++)
+        {
+            Vector2 offset    = Random.insideUnitCircle.normalized * Random.Range(2.2f, attackRange);
+            Vector2 targetPos = (Vector2)transform.position + offset;
 
-        var sr = go.AddComponent<SpriteRenderer>();
-        sr.sprite       = cannonballSprite;
-        sr.sortingOrder = 5;
+            var go = new GameObject("Cannonball");
+            go.transform.position   = transform.position;
+            go.transform.localScale = new Vector3(2.0f, 2.0f, 1f);
 
-        var proj = go.AddComponent<CannonProjectile>();
-        proj.targetPos       = targetPos;
-        proj.explosionRadius = explosionRadius;
-        proj.burnDuration    = burnDuration;
-        proj.burnInterval    = burnInterval;
-        proj.damage          = dmg;
-        proj.dotDamage       = dotDmg;
+            var sr = go.AddComponent<SpriteRenderer>();
+            sr.sprite       = cannonballSprite;
+            sr.sortingOrder = 5;
+
+            var proj = go.AddComponent<CannonProjectile>();
+            proj.targetPos       = targetPos;
+            proj.explosionRadius = explosionRadius;
+            proj.burnDuration    = burnDuration;
+            proj.burnInterval    = burnInterval;
+            proj.damage          = dmg;
+            proj.dotDamage       = dotDmg;
+        }
     }
 }
 
